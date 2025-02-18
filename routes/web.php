@@ -18,3 +18,4 @@ Route::get('/', function () {
 });
 
 Route::get('/syncusers', [CommonController::class, 'syncUsers'])->name('syncusers');
+Route::get('/syncprojects', [CommonController::class, 'syncProjects'])->name('syncprojects');
