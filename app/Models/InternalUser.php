@@ -24,6 +24,7 @@ class InternalUser extends Model implements Authenticatable
             $isExistEmployee = $this->checkExistEmployee($each_employee);
             if ($isExistEmployee) {
                 $update_array = array(
+                    'heads_id' =>$each_employee['EmployeeId'],
                     'first_name'=>$each_employee['FirstName'],
                     'last_name'=>$each_employee['LastName'],
                     'username'=>$each_employee['UserName'],
@@ -36,7 +37,7 @@ class InternalUser extends Model implements Authenticatable
                     'reporting_officer_id' => $each_employee['ReportingOfficerXId'],
                     'reporting_officer_name' => $each_employee['ReportingOfficer'],
                     'designation_id' => $each_employee['DesignationId'], 
-                    'designation_name' => $each_employee['DesignationName'],                 
+                    'designation_name' => $each_employee['DesignationName'],                                
                 );
 
                 
@@ -45,6 +46,7 @@ class InternalUser extends Model implements Authenticatable
 
             }else{
                 $insert_array = array(
+                    'heads_id' =>$each_employee['EmployeeId'], 
                     'first_name'=>$each_employee['FirstName'],
                     'last_name'=>$each_employee['LastName'],
                     'username'=>$each_employee['UserName'],
@@ -57,7 +59,8 @@ class InternalUser extends Model implements Authenticatable
                     'reporting_officer_id' => $each_employee['ReportingOfficerXId'],
                     'reporting_officer_name' => $each_employee['ReportingOfficer'],
                     'designation_id' => $each_employee['DesignationId'], 
-                    'designation_name' => $each_employee['DesignationName'],  
+                    'designation_name' => $each_employee['DesignationName'],
+
                 );
 
                 InternalUser::insert($insert_array);
