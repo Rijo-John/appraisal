@@ -32,7 +32,11 @@ class InternalUser extends Model implements Authenticatable
                     'location' => $each_employee['Location'],
                     'emp_type' => $each_employee['EmployeeType'],
                     'status' => $each_employee['EmployeeStatus'],
-                    'profile_pic' => $each_employee['PhotoFileName']                   
+                    'profile_pic' => $each_employee['PhotoFileName'],
+                    'reporting_officer_id' => $each_employee['ReportingOfficerXId'],
+                    'reporting_officer_name' => $each_employee['ReportingOfficer'],
+                    'designation_id' => $each_employee['DesignationId'], 
+                    'designation_name' => $each_employee['DesignationName'],                 
                 );
 
                 
@@ -49,7 +53,11 @@ class InternalUser extends Model implements Authenticatable
                     'location' => $each_employee['Location'],
                     'emp_type' => $each_employee['EmployeeType'],
                     'status' => $each_employee['EmployeeStatus'],
-                    'profile_pic' => $each_employee['PhotoFileName']   
+                    'profile_pic' => $each_employee['PhotoFileName'] ,
+                    'reporting_officer_id' => $each_employee['ReportingOfficerXId'],
+                    'reporting_officer_name' => $each_employee['ReportingOfficer'],
+                    'designation_id' => $each_employee['DesignationId'], 
+                    'designation_name' => $each_employee['DesignationName'],  
                 );
 
                 InternalUser::insert($insert_array);

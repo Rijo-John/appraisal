@@ -30,7 +30,6 @@ class CommonController extends Controller
 
         // Decode the JSON response
         $data = json_decode($body, true);
-
         // Insert users (assuming insertUsers is a method in your InternalUser model)
         $userInstance->insertUsers($data);
     }
