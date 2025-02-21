@@ -26,8 +26,9 @@ Route::get('/login', [AzureAuthController::class, 'redirectToAzure'])->name('log
 
 Route::get('/auth/azure', [AzureAuthController::class, 'redirectToAzure'])->name('azure.login');
 Route::get('/auth/callback', [AzureAuthController::class, 'handleAzureCallback']);
-Route::post('/logout', [AzureAuthController::class, 'logout'])->name('logout');
 
-Route::middleware(['auth'])->group(function () {
+
+Route::middleware(['auth:web'])->group(function () {
+    Route::post('/logout', [AzureAuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
