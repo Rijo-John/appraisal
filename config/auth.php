@@ -38,7 +38,7 @@ return [
     'guards' => [
         'web' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'internal_users',
         ],
     ],
 
@@ -60,9 +60,9 @@ return [
     */
 
     'providers' => [
-        'users' => [
+        'internal_users' => [
             'driver' => 'eloquent',
-            'model' => App\Models\User::class,
+            'model' => App\Models\InternalUser::class,
         ],
 
         // 'users' => [
@@ -70,6 +70,7 @@ return [
         //     'table' => 'users',
         // ],
     ],
+    'login' => '/login',
 
     /*
     |--------------------------------------------------------------------------
