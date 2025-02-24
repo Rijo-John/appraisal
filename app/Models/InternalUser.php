@@ -12,6 +12,8 @@ class InternalUser extends Model implements Authenticatable
 {
     use AuthenticatableTrait;
     use HasFactory;
+    
+    protected $table = 'internal_users';
 
 
     public function checkExistEmployee($employDetails){
