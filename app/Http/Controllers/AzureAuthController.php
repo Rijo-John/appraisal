@@ -68,6 +68,7 @@ class AzureAuthController extends Controller
         Auth::guard('web')->logout();
         //Session::flush();
         $request->session()->invalidate();
+        $request->session()->flush();
         $request->session()->regenerateToken();
 
         // Forget session cookies
