@@ -7,12 +7,27 @@ use GuzzleHttp\Client;
 use App\Models\User;
 use App\Models\InternalUser;
 use App\Models\Project;
+use App\Models\Designation;
 use Illuminate\Support\Facades\Http; 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
 class CommonController extends Controller
 {
+
+    public function syncDesignations()
+    {
+        $designationInstance = new Designation();
+        $url = env('DESIGNATIONSYNCURL');
+        $response = Http::post($url);
+
+        if ($response->successful()){
+            $data = json_decode($response->body(), true);
+            $designationInstance->insertDesignation($data);
+            
+        }
+    }
+
     
     public function syncUsers()
     {

@@ -23,6 +23,8 @@ Route::get('/', function () {
 
 Route::get('/syncusers', [CommonController::class, 'syncUsers'])->name('syncusers');
 Route::get('/syncprojects', [CommonController::class, 'syncProjects'])->name('syncprojects');
+//Route::post('/syncdesignations', [CommonController::class, 'syncDesignations'])->name('syncdesignations');
+Route::match(['get', 'post'], '/syncdesignations', [CommonController::class, 'syncDesignations'])->name('syncdesignations');
 
 
 

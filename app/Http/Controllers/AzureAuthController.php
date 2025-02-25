@@ -44,6 +44,7 @@ class AzureAuthController extends Controller
         if ($user) {
 
             session(['logged_user_heads_id' => $user['heads_id']]);
+            session(['logged_user_designation_id' => $user['designation_id']]);
             $appraisalFormData = $this->getAppraisalFormData($user['heads_id']);
             $appraiserOfficerHeadsId = ($appraisalFormData && $appraisalFormData->appraiser_officer_heads_id)?$appraisalFormData->appraiser_officer_heads_id:0;
             $appraisalFormId = ($appraisalFormData && $appraisalFormData->id)?$appraisalFormData->id:0;
