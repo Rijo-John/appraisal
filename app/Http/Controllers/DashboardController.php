@@ -13,7 +13,7 @@ class DashboardController extends Controller
         $sessionData = session()->all();
 
         
-        //dd($sessionData);
+        dd($sessionData);
         return view('dashboard');
     }
 }

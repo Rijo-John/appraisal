@@ -45,8 +45,8 @@ class AzureAuthController extends Controller
 
             session(['logged_user_heads_id' => $user['heads_id']]);
             $appraisalFormData = $this->getAppraisalFormData($user['heads_id']);
-            $appraiserOfficerHeadsId = ($appraisalFormData->appraiser_officer_heads_id)?$appraisalFormData->appraiser_officer_heads_id:0;
-            $appraisalFormId = ($appraisalFormData->id)?$appraisalFormData->id:0;
+            $appraiserOfficerHeadsId = ($appraisalFormData && $appraisalFormData->appraiser_officer_heads_id)?$appraisalFormData->appraiser_officer_heads_id:0;
+            $appraisalFormId = ($appraisalFormData && $appraisalFormData->id)?$appraisalFormData->id:0;
 
             //dd($appraisalFormData);
             session(['appraiser_officer_heads_id' => $appraiserOfficerHeadsId]);
