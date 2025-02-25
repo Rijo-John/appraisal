@@ -8,6 +8,7 @@ use App\Models\InternalUser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\DB;
 
 
 
@@ -19,21 +20,47 @@ class AzureAuthController extends Controller
          return Socialite::driver('microsoft')->redirect();
     }
 
+    public function getAppraisalFormData($headsId){
+        //dd($headsId);
+        $appraisalFormData = DB::table('appraisal_form')
+          ->select('id', 'appraiser_officer_heads_id')
+          ->where('heads_id', $headsId)
+          ->where('status', 1)
+          ->first();
+          //dd($appraisalFormData);
+
+          return $appraisalFormData;
+
+    }
+
     // Handle Azure Callback
     public function handleAzureCallback()
     {
         $azureUser = Socialite::driver('microsoft')->stateless()->user();
-        $user = InternalUser::where('email', $azureUser->getEmail())->first();
+        $user = InternalUser::where('email', $azureUser->getEmail())
+                        ->where('status', 'Active')
+                        ->first();
+                        //dd($user['heads_id']);
         if ($user) {
+
+            session(['logged_user_heads_id' => $user['heads_id']]);
+            $appraisalFormData = $this->getAppraisalFormData($user['heads_id']);
+            $appraiserOfficerHeadsId = ($appraisalFormData->appraiser_officer_heads_id)?$appraisalFormData->appraiser_officer_heads_id:0;
+            $appraisalFormId = ($appraisalFormData->id)?$appraisalFormData->id:0;
+
+            //dd($appraisalFormData);
+            session(['appraiser_officer_heads_id' => $appraiserOfficerHeadsId]);
+            session(['appraisal_form_id' => $appraisalFormId]);
             // If user exists, log them in
             //Auth::login($user);
             Auth::guard('web')->login($user);
 
 
+
             return redirect()->route('dashboard')->with('success', 'Successfully logged in!');
         } else {
             // If user does not exist, show an error
-            return redirect('/login')->with('error', 'Unauthorized: You are not registered in our system.');
+            return response()->view('errors.unauthorized', ['email' => $azureUser->getEmail()], 403);
         }
 
         

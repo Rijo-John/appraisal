@@ -11,6 +11,7 @@ class DashboardController extends Controller
    
     public function index(Request $request){
         $sessionData = session()->all();
+
         
         //dd($sessionData);
         return view('dashboard');
