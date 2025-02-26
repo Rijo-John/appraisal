@@ -8,12 +8,54 @@ use App\Models\User;
 use App\Models\InternalUser;
 use App\Models\Project;
 use App\Models\Designation;
+use App\Models\AppraisalForm;
 use Illuminate\Support\Facades\Http; 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class CommonController extends Controller
 {
+    public function decryptAppraisalResponse($encryptedData){
+        $key = env('APPRAISALUSER_ENCRYPTION_KEY'); // 32-byte key
+        $iv = env('APPRAISALUSER_IV'); // 16-byte IV (if required)
+
+        $decrypted = openssl_decrypt(
+            base64_decode($encryptedData), // Convert from Base64 if necessary
+            'aes-256-cbc', // Encryption algorithm
+            $key,
+            OPENSSL_RAW_DATA,
+            $iv
+        );
+
+        return $decrypted;
+    }
+
+
+    public function syncAppraisalUsers(){
+        $url = env('APPRAISALUSERHEADSURL');
+        $appraisalFormInstance = new AppraisalForm();
+        $currentMonth = Carbon::now()->month;
+        $appraisalMonth = ($currentMonth < 7) ? 1 : 2;
+        
+        $body = [
+            'appraisalMonth' => $appraisalMonth
+        ];
+        
+        $headers = [
+            'X-Api-Key' => 'RmVzQXAxVXNlcjpGZXNQQXNzd29yQA',
+            'Content-Type' => 'application/json',
+        ];
+        $response = Http::withHeaders($headers)->post($url, $body);
+        //$response = Http::withHeaders($headers)->post($url, $payload);
+        if ($response->successful()) {
+            $data = $response->json();
+            $decryptedResponse = json_decode($this->decryptAppraisalResponse($data['response']),true);
+            //dd($decryptedResponse['AppraisalListDataResponse']);
+            $appraisalFormInstance->insertAppraisalForm($decryptedResponse['AppraisalListDataResponse']);
+            
+        }
+    }
 
     public function syncDesignations()
     {

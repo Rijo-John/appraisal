@@ -26,6 +26,8 @@ Route::get('/syncprojects', [CommonController::class, 'syncProjects'])->name('sy
 //Route::post('/syncdesignations', [CommonController::class, 'syncDesignations'])->name('syncdesignations');
 Route::match(['get', 'post'], '/syncdesignations', [CommonController::class, 'syncDesignations'])->name('syncdesignations');
 
+Route::match(['get', 'post'], '/syncappraisalusers', [CommonController::class, 'syncAppraisalUsers'])->name('syncappraisalusers');
+
 
 
 Route::get('/questions', [QuestionController::class, 'index']);
