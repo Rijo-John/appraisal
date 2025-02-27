@@ -11,7 +11,5 @@ class AppraisalForm extends Model
     protected $table = 'appraisal_form';
 
 
-    public function insertAppraisalForm($data){
-        
-    }
+    
 }

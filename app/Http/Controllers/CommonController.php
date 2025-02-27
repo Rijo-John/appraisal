@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Models\InternalUser;
 use App\Models\Project;
 use App\Models\Designation;
-use App\Models\AppraisalForm;
+use App\Models\AppraisalFormTemp;
 use Illuminate\Support\Facades\Http; 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -34,7 +34,7 @@ class CommonController extends Controller
 
     public function syncAppraisalUsers(){
         $url = env('APPRAISALUSERHEADSURL');
-        $appraisalFormInstance = new AppraisalForm();
+        $appraisalFormInstance = new AppraisalFormTemp();
         $currentMonth = Carbon::now()->month;
         $appraisalMonth = ($currentMonth < 7) ? 1 : 2;
         
@@ -51,7 +51,6 @@ class CommonController extends Controller
         if ($response->successful()) {
             $data = $response->json();
             $decryptedResponse = json_decode($this->decryptAppraisalResponse($data['response']),true);
-            //dd($decryptedResponse['AppraisalListDataResponse']);
             $appraisalFormInstance->insertAppraisalForm($decryptedResponse['AppraisalListDataResponse']);
             
         }
