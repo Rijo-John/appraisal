@@ -18,7 +18,7 @@ class AppraisalFormTemp extends Model
         $insertData = [];
         foreach ($data as $each_appraisal) {
             $insertData[] = [
-                'heads_id' => $each_appraisal['EmployeeId'],
+                'employee_heads_id' => $each_appraisal['EmployeeId'],
                 'employee_code' => $each_appraisal['Code'],
                 'reporting_officer_heads_id' => $each_appraisal['ReportingOfficerId'],
                 'reporting_officer_name' => $each_appraisal['ReportingOfficer'],
