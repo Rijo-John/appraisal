@@ -7,7 +7,7 @@ use App\Models\AttributeQuestion;
 use App\Models\Designation;
 use Illuminate\Support\Facades\DB;
 
-class QuestionController extends Controller
+class AttributeQuestionController extends Controller
 {
     public function index()
     {
@@ -44,5 +44,4 @@ class QuestionController extends Controller
 
         return response()->json(['message' => 'Questions assigned successfully!']);
     }
-
 }

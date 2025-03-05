@@ -32,7 +32,7 @@
             background: #45a049;
         }
     </style>
-    
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
     <h2>Attribute Listing</h2>
@@ -78,15 +78,15 @@
                         </td>
                         @php $printedAttributes[$row->attribute_id] = true; @endphp
                     @endif
-                    <td>{{ $row->attribute_question ?? 'N/A' }}</td>
+                    <td id="{{ $row->attribute_question_id }}">{{ $row->attribute_question ?? 'N/A' }}</td>
                     <td>
-                        <select name="rating[{{ $row->attribute_question_id }}]">
+                        <select class="attribute_rating" name="rating[{{ $row->attribute_question_id }}]"         data-question-id="{{ $row->attribute_question_id }}">
                             <option value="">Select</option>
-                            <option value="{{$row->attribute_id}}-1">1 - Poor</option>
-                            <option value="{{$row->attribute_id}}-2">2 - Fair</option>
-                            <option value="{{$row->attribute_id}}-3">3 - Good</option>
-                            <option value="{{$row->attribute_id}}-4">4 - Very Good</option>
-                            <option value="{{$row->attribute_id}}-5">5 - Excellent</option>
+                            <option value="{{$row->attribute_id}}_1">1 - Poor</option>
+                            <option value="{{$row->attribute_id}}_2">2 - Fair</option>
+                            <option value="{{$row->attribute_id}}_3">3 - Good</option>
+                            <option value="{{$row->attribute_id}}_4">4 - Very Good</option>
+                            <option value="{{$row->attribute_id}}_5">5 - Excellent</option>
                         </select>
                     </td>
                 </tr>
@@ -102,30 +102,40 @@
             $(".save-btn").on("click", function () {
                 debugger;
                 let formData = new FormData($("#attribute_review_form")[0]); // Get all form data
+                let missingRatings = [];
+                var count = 1;
+                $(".attribute_rating").each(function () {
+                    let ratingValue = $(this).val();
 
-                // $(".rating").each(function () {
-                //     let questionId = $(this).data("id");
-                //     let ratingValue = $(this).val();
-                //     if (ratingValue) {
-                //         formData.append(`ratings[${questionId}]`, ratingValue);
-                //     }
-                // });
-
-                
-
-                $.ajax({
-                    url: "/saveRatings",
-                    type: "POST",
-                    data: formData,
-                    processData: false,
-                    contentType: false, 
-                    success: function (response) {
-                        $(".message").fadeIn().delay(2000).fadeOut();
-                    },
-                    error: function () {
-                        alert("Something went wrong!");
+                    if(ratingValue == "")
+                    {
+                        let question_id = $(this).data("question-id");
+                        let questionText = count+'. '+$("#" + question_id).text().trim();
+                        debugger;
+                        missingRatings.push(questionText);
+                        count++;
                     }
                 });
+
+                if (missingRatings.length > 0) {
+                    alert("Please give a rating for the following:\n\n" + missingRatings.join("\n"));
+                } else {
+                    $.ajax({
+                        url: "/saveAttribureRatings",
+                        type: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false, 
+                        success: function (response) {
+                            alert("Successfully inserted!");
+                        },
+                        error: function () {
+                            alert("Something went wrong!");
+                        }
+                    });
+                }
+
+                
             });
         });
     </script>

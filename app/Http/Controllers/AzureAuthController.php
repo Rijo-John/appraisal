@@ -24,7 +24,7 @@ class AzureAuthController extends Controller
         //dd($headsId);
         $appraisalFormData = DB::table('appraisal_form')
           ->select('id', 'appraiser_officer_heads_id')
-          ->where('heads_id', $headsId)
+          ->where('employee_heads_id', $headsId)
           ->where('status', 1)
           ->first();
           //dd($appraisalFormData);
