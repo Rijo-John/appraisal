@@ -4,6 +4,8 @@ use App\Http\Controllers\AzureAuthController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AppraisalMasterController;
 use App\Http\Controllers\AttributeReviewController;
 
 /*
@@ -26,7 +28,6 @@ Route::get('/syncprojects', [CommonController::class, 'syncProjects'])->name('sy
 //Route::post('/syncdesignations', [CommonController::class, 'syncDesignations'])->name('syncdesignations');
 Route::match(['get', 'post'], '/syncdesignations', [CommonController::class, 'syncDesignations'])->name('syncdesignations');
 
-Route::match(['get', 'post'], '/syncappraisalusers', [CommonController::class, 'syncAppraisalUsers'])->name('syncappraisalusers');
 
 
 
@@ -45,5 +46,27 @@ Route::get('/auth/callback', [AzureAuthController::class, 'handleAzureCallback']
 Route::middleware(['auth:web'])->group(function () {
     Route::post('/logout', [AzureAuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+
+    Route::middleware(['superadmin'])->group(function () {
+        Route::get('/assign-admin', [AdminController::class, 'showAssignAdmin'])->name('assign.admin');
+        Route::get('/assign-admin/users', [AdminController::class, 'getUsers'])->name('assign.admin.users'); // New AJAX route
+        Route::post('/assign-admin', [AdminController::class, 'assignAdmin'])->name('assign.admin.submit');
+
+        Route::get('/appraisal-master', function () {
+            return view('appraisal_master'); 
+        })->name('appraisal.view');
+
+        Route::get('/getappraisaldata', [AppraisalMasterController::class, 'getAppraisalData'])->name('appraisaldata');
+        Route::match(['get', 'post'], '/syncappraisalusers', [CommonController::class, 'syncAppraisalUsers'])->name('syncappraisalusers');
+
+        Route::get('/getSyncedAppraisalUsers', [CommonController::class, 'getSyncedAppraisalUsers'])->name('getSyncedAppraisalUsers');
+        Route::post('/storeAppraisalUsers', [CommonController::class, 'storeAppraisalUsers'])->name('storeAppraisalUsers');
+
+
+
+    });
+
+
 });
 

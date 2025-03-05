@@ -32,6 +32,31 @@ class CommonController extends Controller
     }
 
 
+    public function getSyncedAppraisalUsers()
+    {
+        $users = AppraisalFormTemp::select(
+                                'appraisal_form_temp.id',
+                                'appraisal_form_temp.employee_code',
+                                'internal_users.username as username',
+                                'appraisal_form_temp.reporting_officer_name',
+                                'appraisal_form_temp.appraiser_officer_name',
+                                'designations.designation_name as designation',
+                                'appraisal_form_temp.department_name'
+                            )
+                    ->leftJoin('internal_users', function ($join) {
+                        $join->on('internal_users.heads_id', '=', 'appraisal_form_temp.employee_heads_id')
+                             ->where('internal_users.emp_type', 'Permanent');
+                    })
+                    ->leftJoin('designations', 'designations.designation_id', '=', 'appraisal_form_temp.designation_id')
+
+                    ->orderBy('appraisal_form_temp.employee_heads_id', 'asc')
+                    ->get();
+
+        return response()->json($users);
+    }
+
+
+
     public function syncAppraisalUsers(){
         $url = env('APPRAISALUSERHEADSURL');
         $appraisalFormInstance = new AppraisalFormTemp();
@@ -52,8 +77,33 @@ class CommonController extends Controller
             $data = $response->json();
             $decryptedResponse = json_decode($this->decryptAppraisalResponse($data['response']),true);
             $appraisalFormInstance->insertAppraisalForm($decryptedResponse['AppraisalListDataResponse']);
+
+
+
+            $syncedData = AppraisalFormTemp::select(
+                                'appraisal_form_temp.employee_code',
+                                'internal_users.username as username',
+                                'appraisal_form_temp.reporting_officer_name',
+                                'appraisal_form_temp.appraiser_officer_name',
+                                'designations.designation_name as designation',
+                                'appraisal_form_temp.department_name'
+                            )
+                    ->leftJoin('internal_users', 'internal_users.heads_id', '=', 'appraisal_form_temp.employee_heads_id')
+                    ->leftJoin('designations', 'designations.designation_id', '=', 'appraisal_form_temp.designation_id')
+                    ->orderBy('appraisal_form_temp.employee_heads_id', 'asc')
+                    ->get();
+
+                    //dd($syncedData);
+
+            return response()->json([
+                'message' => 'Data synced successfully!',
+                'data' => $syncedData
+            ]);
             
         }
+        return response()->json([
+            'message' => 'Error syncing data.'
+        ], 500);
     }
 
     public function syncDesignations()
@@ -164,5 +214,38 @@ class CommonController extends Controller
             Log::error('Failed to fetch data: ' . $response->status());
         }
     }
+
+    public function storeAppraisalUsers(Request $request)
+    {
+        $selectedUsers = $request->input('users');
+
+        if (empty($selectedUsers)) {
+            return response()->json(['message' => 'No users selected'], 400);
+        }
+
+        $users = DB::table('appraisal_form_temp')->whereIn('id', $selectedUsers)->get();
+        $insertData = $users->map(function ($user) {
+            return [
+                'employee_heads_id' => $user->employee_heads_id,
+                'employee_code' => $user->employee_code,
+                'reporting_officer_heads_id' => $user->reporting_officer_heads_id,
+                'reporting_officer_name' => $user->reporting_officer_name,
+                'appraiser_officer_heads_id' => $user->appraiser_officer_heads_id,
+                'appraiser_officer_name' => $user->appraiser_officer_name,
+                'designation_id' => $user->designation_id,
+                'department_id' => $user->department_id,
+                'practise' => $user->practise,
+                'status'=>1,
+                'created_at' => Carbon::now()->toDateTimeString(), 
+                'updated_at' => Carbon::now()->toDateTimeString(),
+            ];
+        })->toArray();
+        //dd($insertData);
+        DB::table('appraisal_form')->insert($insertData);
+
+        return response()->json(['message' => 'Data successfully inserted into appraisal_form']);
+
+    }
+
 
 }

@@ -26,6 +26,7 @@ class AppraisalFormTemp extends Model
                 'appraiser_officer_name' => $each_appraisal['AppraiserOfficer'],
                 'designation_id' => $each_appraisal['DesignationId'],
                 'department_id' => $each_appraisal['DepartmentId'],
+                'department_name' => $each_appraisal['DepartmentName'],
                 'practise' => $each_appraisal['Practise'],
                 'status' => 1,
                 'created_at' => now(),
