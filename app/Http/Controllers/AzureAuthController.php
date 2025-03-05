@@ -24,12 +24,8 @@ class AzureAuthController extends Controller
     public function getAppraisalFormData($headsId){
         //dd($headsId);
         $appraisalFormData = DB::table('appraisal_form')
-<<<<<<< HEAD
-          ->select('id', 'appraiser_officer_heads_id')
-=======
-          ->select('id', 'appraiser_officer_heads_id','appraiser_officer_name','reporting_officer_name')
->>>>>>> 3f20840d9cc659f9df9bc4c0cd45064dd4b7a616
-          ->where('employee_heads_id', $headsId)
+        ->select('id', 'appraiser_officer_heads_id','appraiser_officer_name','reporting_officer_name')
+        ->where('employee_heads_id', $headsId)
           ->where('status', 1)
           ->first();
           //dd($appraisalFormData);
