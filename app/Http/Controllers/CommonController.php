@@ -7,12 +7,118 @@ use GuzzleHttp\Client;
 use App\Models\User;
 use App\Models\InternalUser;
 use App\Models\Project;
+use App\Models\Designation;
+use App\Models\AppraisalFormTemp;
 use Illuminate\Support\Facades\Http; 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class CommonController extends Controller
 {
+    public function decryptAppraisalResponse($encryptedData){
+        $key = env('APPRAISALUSER_ENCRYPTION_KEY'); // 32-byte key
+        $iv = env('APPRAISALUSER_IV'); // 16-byte IV (if required)
+
+        $decrypted = openssl_decrypt(
+            base64_decode($encryptedData), // Convert from Base64 if necessary
+            'aes-256-cbc', // Encryption algorithm
+            $key,
+            OPENSSL_RAW_DATA,
+            $iv
+        );
+
+        return $decrypted;
+    }
+
+
+    public function getSyncedAppraisalUsers()
+    {
+        $users = AppraisalFormTemp::select(
+                                'appraisal_form_temp.id',
+                                'appraisal_form_temp.employee_code',
+                                'internal_users.username as username',
+                                'appraisal_form_temp.reporting_officer_name',
+                                'appraisal_form_temp.appraiser_officer_name',
+                                'designations.designation_name as designation',
+                                'appraisal_form_temp.department_name'
+                            )
+                    ->leftJoin('internal_users', function ($join) {
+                        $join->on('internal_users.heads_id', '=', 'appraisal_form_temp.employee_heads_id')
+                             ->where('internal_users.emp_type', 'Permanent');
+                    })
+                    ->leftJoin('designations', 'designations.designation_id', '=', 'appraisal_form_temp.designation_id')
+
+                    ->orderBy('appraisal_form_temp.employee_heads_id', 'asc')
+                    ->get();
+
+        return response()->json($users);
+    }
+
+
+
+    public function syncAppraisalUsers(){
+        $url = env('APPRAISALUSERHEADSURL');
+        $appraisalFormInstance = new AppraisalFormTemp();
+        $currentMonth = Carbon::now()->month;
+        $appraisalMonth = ($currentMonth < 7) ? 1 : 2;
+        
+        $body = [
+            'appraisalMonth' => $appraisalMonth
+        ];
+        
+        $headers = [
+            'X-Api-Key' => 'RmVzQXAxVXNlcjpGZXNQQXNzd29yQA',
+            'Content-Type' => 'application/json',
+        ];
+        $response = Http::withHeaders($headers)->post($url, $body);
+        //$response = Http::withHeaders($headers)->post($url, $payload);
+        if ($response->successful()) {
+            $data = $response->json();
+            $decryptedResponse = json_decode($this->decryptAppraisalResponse($data['response']),true);
+            $appraisalFormInstance->insertAppraisalForm($decryptedResponse['AppraisalListDataResponse']);
+
+
+
+            $syncedData = AppraisalFormTemp::select(
+                                'appraisal_form_temp.employee_code',
+                                'internal_users.username as username',
+                                'appraisal_form_temp.reporting_officer_name',
+                                'appraisal_form_temp.appraiser_officer_name',
+                                'designations.designation_name as designation',
+                                'appraisal_form_temp.department_name'
+                            )
+                    ->leftJoin('internal_users', 'internal_users.heads_id', '=', 'appraisal_form_temp.employee_heads_id')
+                    ->leftJoin('designations', 'designations.designation_id', '=', 'appraisal_form_temp.designation_id')
+                    ->orderBy('appraisal_form_temp.employee_heads_id', 'asc')
+                    ->get();
+
+                    //dd($syncedData);
+
+            return response()->json([
+                'message' => 'Data synced successfully!',
+                'data' => $syncedData
+            ]);
+            
+        }
+        return response()->json([
+            'message' => 'Error syncing data.'
+        ], 500);
+    }
+
+    public function syncDesignations()
+    {
+        $designationInstance = new Designation();
+        $url = env('DESIGNATIONSYNCURL');
+        $response = Http::post($url);
+
+        if ($response->successful()){
+            $data = json_decode($response->body(), true);
+            $designationInstance->insertDesignation($data);
+            
+        }
+    }
+
     
     public function syncUsers()
     {
@@ -108,5 +214,38 @@ class CommonController extends Controller
             Log::error('Failed to fetch data: ' . $response->status());
         }
     }
+
+    public function storeAppraisalUsers(Request $request)
+    {
+        $selectedUsers = $request->input('users');
+
+        if (empty($selectedUsers)) {
+            return response()->json(['message' => 'No users selected'], 400);
+        }
+
+        $users = DB::table('appraisal_form_temp')->whereIn('id', $selectedUsers)->get();
+        $insertData = $users->map(function ($user) {
+            return [
+                'employee_heads_id' => $user->employee_heads_id,
+                'employee_code' => $user->employee_code,
+                'reporting_officer_heads_id' => $user->reporting_officer_heads_id,
+                'reporting_officer_name' => $user->reporting_officer_name,
+                'appraiser_officer_heads_id' => $user->appraiser_officer_heads_id,
+                'appraiser_officer_name' => $user->appraiser_officer_name,
+                'designation_id' => $user->designation_id,
+                'department_id' => $user->department_id,
+                'practise' => $user->practise,
+                'status'=>1,
+                'created_at' => Carbon::now()->toDateTimeString(), 
+                'updated_at' => Carbon::now()->toDateTimeString(),
+            ];
+        })->toArray();
+        //dd($insertData);
+        DB::table('appraisal_form')->insert($insertData);
+
+        return response()->json(['message' => 'Data successfully inserted into appraisal_form']);
+
+    }
+
 
 }

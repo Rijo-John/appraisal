@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\InternalUser;
+use App\Models\AppraisalCycle;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Cookie;
@@ -23,7 +24,11 @@ class AzureAuthController extends Controller
     public function getAppraisalFormData($headsId){
         //dd($headsId);
         $appraisalFormData = DB::table('appraisal_form')
+<<<<<<< HEAD
           ->select('id', 'appraiser_officer_heads_id')
+=======
+          ->select('id', 'appraiser_officer_heads_id','appraiser_officer_name','reporting_officer_name')
+>>>>>>> 3f20840d9cc659f9df9bc4c0cd45064dd4b7a616
           ->where('employee_heads_id', $headsId)
           ->where('status', 1)
           ->first();
@@ -32,6 +37,8 @@ class AzureAuthController extends Controller
           return $appraisalFormData;
 
     }
+
+    
 
     // Handle Azure Callback
     public function handleAzureCallback()
@@ -44,13 +51,18 @@ class AzureAuthController extends Controller
         if ($user) {
 
             session(['logged_user_heads_id' => $user['heads_id']]);
+            session(['logged_user_designation_id' => $user['designation_id']]);
             $appraisalFormData = $this->getAppraisalFormData($user['heads_id']);
+            $currentAppraisalCycleData = $this->getCurrentAppraisalCycle();
             $appraiserOfficerHeadsId = ($appraisalFormData && $appraisalFormData->appraiser_officer_heads_id)?$appraisalFormData->appraiser_officer_heads_id:0;
+            $appraiserOfficerName = ($appraisalFormData && $appraisalFormData->appraiser_officer_name)?$appraisalFormData->appraiser_officer_name:'';
             $appraisalFormId = ($appraisalFormData && $appraisalFormData->id)?$appraisalFormData->id:0;
 
             //dd($appraisalFormData);
             session(['appraiser_officer_heads_id' => $appraiserOfficerHeadsId]);
             session(['appraisal_form_id' => $appraisalFormId]);
+            session(['current_appraisal_cycle' => $currentAppraisalCycleData->id]);
+            session(['appraiserOfficerName' => $appraiserOfficerName]);
             // If user exists, log them in
             //Auth::login($user);
             Auth::guard('web')->login($user);
