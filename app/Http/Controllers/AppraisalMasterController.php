@@ -10,6 +10,11 @@ use DataTables;
 
 class AppraisalMasterController extends Controller
 {
+    public function getCurrentAppraisalCycle(){
+        $appraisalCycleData = AppraisalCycle::where('status', 1)
+                ->first();
+        return $appraisalCycleData;
+    }
     public function getAppraisalData(Request $request)
     {
         $currentAppraisalCycleData = $this->getCurrentAppraisalCycle();
@@ -26,7 +31,9 @@ class AppraisalMasterController extends Controller
             ->join('designations', 'appraisal_form.designation_id', '=', 'designations.id')
             ->leftJoin('internal_users as rep', 'appraisal_form.reporting_officer_heads_id', '=', 'rep.heads_id')
             ->leftJoin('internal_users as app', 'appraisal_form.appraiser_officer_heads_id', '=', 'app.heads_id')
+            ->where('appraisal_form.status', 1)
             ->where('appraisal_cycle_id', $currentAppraisalCycleData->id);
+            
             //dd($appraisals);
 
         return DataTables::of($appraisals)->make(true);

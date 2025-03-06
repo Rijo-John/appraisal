@@ -92,14 +92,15 @@
 
               <div class="tab-pane fade" id="assign-tab-pane" role="tabpanel" aria-labelledby="assign-tab"
                 tabindex="0">
-                  
+
                    @include('assign-admin') 
+
               </div>
 
-              <div class="tab-pane fade" id="assign-tab-pane" role="tabpanel" aria-labelledby="assign-tab"
+              <div class="tab-pane fade" id="appraisal-tab-pane" role="tabpanel" aria-labelledby="appraisal-tab"
                 tabindex="0">
-                  
-                   @include('assign-admin') 
+                   @include('appraisal_master') 
+                   
               </div>
 
             </div>
