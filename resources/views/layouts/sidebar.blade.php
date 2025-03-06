@@ -61,7 +61,7 @@
                   <span></span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-start-sm">
-                  <li><a class="dropdown-item" href="{{ route('administration')}}">Assign Admin</a></li>
+                  <li><a class="dropdown-item" href="{{ route('assign.admin')}}">Assign Admin</a></li>
                   <li><a class="dropdown-item" href="{{ route('appraisal.view')}}">Appraisal</a></li>
                 </ul>
               </li>

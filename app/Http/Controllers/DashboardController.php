@@ -15,6 +15,7 @@ class DashboardController extends Controller
         $appraiserOfficerName = $sessionData['appraiserOfficerName'];
         $appraisalData = AppraisalCycle::select('appraisal_period')->where('status',1)->first();
         $user = Auth::user();
+        
         $user->name = $user->first_name . ' ' . $user->last_name;
         return view('dashboard', compact('user','appraisalData','appraiserOfficerName'));
     }

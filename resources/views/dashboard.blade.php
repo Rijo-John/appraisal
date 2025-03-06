@@ -1,9 +1,8 @@
   @extends('layouts.app')
   @section('content')
-
         <div class="row">
           <div class="col">
-           @include('layouts.sidebarmenu') 
+           <!-- @include('layouts.sidebarmenu')  -->
   
             <div class="tab-content tab-content-custom" id="myTabContent">
               <div class="tab-pane fade show active" id="cover-pane" role="tabpanel" aria-labelledby="cover"
@@ -90,18 +89,7 @@
               <div class="tab-pane fade" id="contact-tab-pane" role="tabpanel" aria-labelledby="contact-tab"
                 tabindex="0">tab 3</div>
 
-              <div class="tab-pane fade" id="assign-tab-pane" role="tabpanel" aria-labelledby="assign-tab"
-                tabindex="0">
-
-                   @include('assign-admin') 
-
-              </div>
-
-              <div class="tab-pane fade" id="appraisal-tab-pane" role="tabpanel" aria-labelledby="appraisal-tab"
-                tabindex="0">
-                   @include('appraisal_master') 
-                   
-              </div>
+              
 
             </div>
           </div>
