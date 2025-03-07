@@ -9,13 +9,21 @@ use App\Models\InternalUser;
 use App\Models\Project;
 use App\Models\Designation;
 use App\Models\AppraisalFormTemp;
+use App\Models\AppraisalCycle;
 use Illuminate\Support\Facades\Http; 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Session;
 
 class CommonController extends Controller
 {
+
+    public function getCurrentAppraisalCycle(){
+        $appraisalCycleData = AppraisalCycle::where('status', 1)
+                ->first();
+        return $appraisalCycleData;
+    }
     public function decryptAppraisalResponse($encryptedData){
         $key = env('APPRAISALUSER_ENCRYPTION_KEY'); // 32-byte key
         $iv = env('APPRAISALUSER_IV'); // 16-byte IV (if required)
@@ -51,6 +59,7 @@ class CommonController extends Controller
 
                     ->orderBy('appraisal_form_temp.employee_heads_id', 'asc')
                     ->get();
+        //dd($users);
 
         return response()->json($users);
     }
@@ -217,6 +226,7 @@ class CommonController extends Controller
 
     public function storeAppraisalUsers(Request $request)
     {
+        
         $selectedUsers = $request->input('users');
 
         if (empty($selectedUsers)) {
@@ -225,6 +235,8 @@ class CommonController extends Controller
 
         $users = DB::table('appraisal_form_temp')->whereIn('id', $selectedUsers)->get();
         $insertData = $users->map(function ($user) {
+            $sessionData = session()->all();
+            $currentAppraisalCycle = $sessionData['current_appraisal_cycle'];
             return [
                 'employee_heads_id' => $user->employee_heads_id,
                 'employee_code' => $user->employee_code,
@@ -236,6 +248,7 @@ class CommonController extends Controller
                 'department_id' => $user->department_id,
                 'practise' => $user->practise,
                 'status'=>1,
+                'appraisal_cycle_id' =>$currentAppraisalCycle,
                 'created_at' => Carbon::now()->toDateTimeString(), 
                 'updated_at' => Carbon::now()->toDateTimeString(),
             ];

@@ -8,7 +8,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu"
               aria-label="Close"></button>
           </div>
-          <div class="offcanvas-body d-md-flex flex-column pt-lg-3 overflow-y-auto">
+          <div class="offcanvas-body d-md-flex flex-column pt-lg-3">
             <ul class="nav flex-column">
               <li class="nav-item">
                 <a class="nav-link border-bottom gap-2 active" href="#">
@@ -45,6 +45,25 @@
                   <i class="bi bi-person-check"></i>
                   Appraiser
                 </a>
+              </li>
+
+              <!-- <li class="nav-item">
+                <a class="nav-link border-bottom gap-2" href="{{ route('administration')}}">
+                  <i class="bi bi-gear"></i>
+                  Administration
+                </a>
+              </li> -->
+
+              <li class="nav-item dropend">
+                <a class="nav-link border-bottom gap-2 dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-gear"></i>
+                  Administration
+                  <span></span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-start-sm">
+                  <li><a class="dropdown-item" href="{{ route('assign.admin')}}">Assign Admin</a></li>
+                  <li><a class="dropdown-item" href="{{ route('appraisal.view')}}">Appraisal</a></li>
+                </ul>
               </li>
             </ul>
             <ul class="nav flex-column logout-btn">

@@ -51,6 +51,7 @@ class Kernel extends HttpKernel
         // Other middleware
         'superadmin' => \App\Http\Middleware\SuperAdminMiddleware::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'admin_or_superadmin' => \App\Http\Middleware\AdminOrSuperAdmin::class,
     ];
 
     /**
