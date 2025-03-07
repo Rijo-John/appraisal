@@ -5,7 +5,7 @@
         <div class="row">
             <div class="col">
                 <div class="container mt-5">
-                    <h2>Appraisal Data</h2>
+                    
 
                     
     

@@ -43,10 +43,11 @@ class AzureAuthController extends Controller
         $user = InternalUser::where('email', $azureUser->getEmail())
                         ->where('status', 'Active')
                         ->first();
-                        //dd($user['heads_id']);
+        //dd($user['first_name'].' '. $user['last_name']);
         if ($user) {
 
             session(['logged_user_heads_id' => $user['heads_id']]);
+            session(['logged_user' => $user['first_name'].' '. $user['last_name']]);
             session(['logged_user_designation_id' => $user['designation_id']]);
             $appraisalFormData = $this->getAppraisalFormData($user['heads_id']);
             $currentAppraisalCycleData = $this->getCurrentAppraisalCycle();

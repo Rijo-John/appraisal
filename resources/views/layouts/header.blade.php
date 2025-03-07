@@ -6,7 +6,8 @@
     
     <div class="col-auto ms-auto profile-pic-wrapper">
       <div class="row align-items-center">
-        <div class="col d-none d-md-block"><span class="text-body-secondary">Welcome</span> Rijo</div>
+        
+        <div class="col d-none d-md-block"><span class="text-body-secondary">Welcome</span> {{ Session::get('logged_user') }}</div>
         <div class="col-auto">
 
           <img src="{{ asset('assets/images/picture-profile.jpg') }}" width="35" height="35">
