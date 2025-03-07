@@ -1,5 +1,6 @@
  @extends('layouts.app')
 @section('content')
+<main class="col  ms-sm-auto  content-wrapper-no-left-tab">
 <div class="card">
     <div class="card-body">
         <div class="row">
@@ -86,4 +87,5 @@
 
     </div>
 </div>
+</main>
 @endsection
