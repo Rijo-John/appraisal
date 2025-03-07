@@ -25,7 +25,7 @@
 
                 <div class="container mt-5">
                     <h2>Appraisal Data</h2>
-                    <button id="syncButton" class="btn btn-primary mb-3" style="display: none;">Sync Appraisal Users</button>
+                    <button id="syncButton" class="btn btn-primary mb-3" style="display: block;">Sync Appraisal Users</button>
                     <table id="appraisalTable" class="table table-bordered">
                         <thead class="table-dark">
                             <tr>
@@ -94,7 +94,7 @@
                             pageLength: 10, // Show 10 records per page
                             "initComplete": function(settings, json) {
                                 if (json.data.length === 0) {
-                                    $('#syncButton').show();
+                                    //$('#syncButton').show();
                                 }
                             }
                         });
