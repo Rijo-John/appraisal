@@ -46,55 +46,5 @@ class GoalController extends Controller
         return view('goals_listing_page', compact('user_goals', 'user_projects', 'goalWiseData'));
     }
     
-    public function submitEmpGoals(Request $request)
-    {
-        $userHeadsId = 2305;
-        $appraisalCycle = 1;
-        $submittedGoalRatings = DB::table('employee_goal_ratings')
-                                ->where('appraisal_cycle', $appraisalCycle)
-                                ->where('employee_heads_id', $userHeadsId)
-                                ->exists(); 
-        if ($submittedGoalRatings) {
-            // Delete existing records
-            DB::table('employee_goal_ratings')
-                ->where('appraisal_cycle', $appraisalCycle)
-                ->where('employee_heads_id', $userHeadsId)
-                ->delete();
-        }
-        
-        $user_goals =  DB::table('goals')
-                        ->select(
-                            'id',
-                            'goal',
-                            'employee_heads_id',
-                            'appraisal_cycle',
-                            'weightage'
-                        )
-                        ->where('appraisal_cycle', $appraisalCycle)
-                        ->where('employee_heads_id', $userHeadsId)
-                        ->get();
-        foreach ($user_goals as $goals) {
-            $projectCount = $request->input('hiddenCount'.$goals->id);
-            for($i = 1;$i<=$projectCount;$i++)
-            {
-                $projectId = 'project_' . $goals->id . '_' . $i;
-                $ratingValue = 'rating_' . $goals->id . '_' . $i;
-                $empremarks = 'remarks_' . $goals->id . '_' . $i;
-                
-                if ($request->has($projectId) && $request->filled($projectId) && 
-                    $request->has($ratingValue) && $request->filled($ratingValue)) {
-                    DB::table('employee_goal_ratings')->insert([
-                        'appraisal_cycle' => $appraisalCycle,
-                        'employee_heads_id' => $userHeadsId,
-                        'goal_id' => $goals->id,
-                        'parats_project_id' => $request->input($projectId),
-                        'rating' => $request->input($ratingValue),
-                        'employee_comment' => $request->input($empremarks)
-                    ]);
-                }
-            }
-        }
-
-       // return view('goals_listing_page', compact('user_goals', 'user_projects'));
-    }
+    
 }

@@ -56,9 +56,9 @@ Route::middleware(['auth:web'])->group(function () {
 
     Route::get('/employee-review-listing', [AppraisalFormController::class, 'reviewEmployeeList']);
 
-    Route::get('/employee-goal-listing', [GoalController::class, 'index']);
-    Route::post('/employee-goal-submit', [GoalController::class, 'submitEmpGoals'])->name('employeeGoalSubmit');
-
+    //Route::get('/employee-goal-listing', [GoalController::class, 'index']);
+    Route::post('/employee-goal-submit', [AppraisalFormController::class, 'submitEmpGoals'])->name('employeeGoalSubmit');
+    Route::get('/my-appraisal', [AppraisalFormController::class, 'index'])->name('myappraisal');
 
     Route::middleware(['superadmin'])->group(function () {
         Route::get('/assign-admin', [AdminController::class, 'showAssignAdmin'])->name('assign.admin');

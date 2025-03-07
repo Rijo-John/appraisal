@@ -20,9 +20,9 @@
     <div class="row h-100">
 
       @include('layouts.sidebar')
-      <main class="col  ms-sm-auto  content-wrapper">
+      
         @yield('content')
-      </main>
+     
       
     </div>
   </div>

@@ -28,8 +28,7 @@
     </style>
 </head>
 <body>
-<form action="{{ route('employeeGoalSubmit') }}" method="POST" enctype="multipart/form-data">
-@csrf
+
     <h2>Goals</h2>
     @foreach($user_goals as $index => $goal)
     <div class="goal-container">
@@ -44,7 +43,7 @@
                     {
             ?>   
                 <div class="project">
-                        <select name="project_{{ $goal->id }}_1">
+                        <select name="project_{{ $goal->id }}_{{ $flag+1 }}">
                             <option value="0" <?= ($data->parats_project_id == 0) ? 'selected' : '' ?>>Not Applicable</option>
                             @foreach($user_projects as $projectIndex => $project)
                                 <option value="<?=$project->parats_project_id?>" <?= ($data->parats_project_id == $project->parats_project_id) ? 'selected' : '' ?>><?=$project->project_name?></option>

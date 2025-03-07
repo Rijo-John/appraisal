@@ -62,10 +62,8 @@ class AzureAuthController extends Controller
             // If user exists, log them in
             //Auth::login($user);
             Auth::guard('web')->login($user);
-
-
-
-            return redirect()->route('dashboard')->with('success', 'Successfully logged in!');
+            //return redirect()->route('dashboard')->with('success', 'Successfully logged in!');
+            return redirect()->route('myappraisal')->with('success', 'Successfully logged in!');
         } else {
             // If user does not exist, show an error
             return response()->view('errors.unauthorized', ['email' => $azureUser->getEmail()], 403);
