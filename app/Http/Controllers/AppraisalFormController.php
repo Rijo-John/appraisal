@@ -97,10 +97,66 @@ class AppraisalFormController extends Controller
             'goalWiseData' => $goalWiseData,
         ]);
     }
-
-
     public function submitEmpGoals(Request $request)
     {
+        //echo '<pre>'; print_r($request->input()); die();
+        $sessionData = session()->all();
+        $appraiserOfficerName = $sessionData['appraiserOfficerName'];
+        $userHeadsId = $sessionData['logged_user_heads_id'];
+        $appraisalCycle = $sessionData['current_appraisal_cycle'];
+
+        $submittedGoalRatings = DB::table('employee_goal_ratings')
+                                ->where('appraisal_cycle', $appraisalCycle)
+                                ->where('employee_heads_id', $userHeadsId)
+                                ->exists(); 
+        //echo '<pre>'; print_r($submittedGoalRatings); die();
+        if ($submittedGoalRatings) {
+            // Delete existing records
+            DB::table('employee_goal_ratings')
+                ->where('appraisal_cycle', $appraisalCycle)
+                ->where('employee_heads_id', $userHeadsId)
+                ->delete();
+        }
+        $user_goals =  DB::table('goals')
+                       ->select(
+                            'id','goal','employee_heads_id','appraisal_cycle','weightage'
+                        )
+                        ->where('appraisal_cycle', $appraisalCycle)
+                        ->where('employee_heads_id', $userHeadsId)
+                        ->get();
+        $user_projects = DB::table('project_allocations')
+                        ->select('projects.parats_project_id','projects.project_name')
+                        ->leftJoin('projects', 'projects.parats_project_id', '=', 'project_allocations.parats_project_id')
+                        ->where('project_allocations.heads_id', $userHeadsId)
+                        ->get();
+        //echo '<pre>'; print_r($request->input()); die();           
+        foreach ($user_projects as $projects) {
+           // $projectCount = $request->input('hiddenCount'.$goals->id);
+            foreach($user_goals as $goals)
+            {
+                $ratingValue = 'rating_' . $projects->parats_project_id . '_' . $goals->id;
+                $empremarks = 'remarks_' . $projects->parats_project_id . '_' . $goals->id;
+                
+                
+                    DB::table('employee_goal_ratings')->insert([
+                        'appraisal_cycle' => $appraisalCycle,
+                        'employee_heads_id' => $userHeadsId,
+                        'goal_id' => $goals->id,
+                        'parats_project_id' => $projects->parats_project_id,
+                        'rating' => $request->input($ratingValue),
+                        'employee_comment' => $request->input($empremarks)
+                    ]);
+                
+            }
+        }
+
+        return redirect()->route('myappraisal');
+
+    }
+
+    public function submitEmpGoalsOLd(Request $request)
+    {
+        //echo '<pre>'; print_r($request->input()); die();
         $sessionData = session()->all();
         $appraiserOfficerName = $sessionData['appraiserOfficerName'];
         $userHeadsId = $sessionData['logged_user_heads_id'];

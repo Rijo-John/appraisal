@@ -10,7 +10,7 @@
               </li>
               <li class="nav-item" role="presentation">
                 <button class="nav-link" id="employee-tasks" data-bs-toggle="tab" data-bs-target="#employee-tasks-pane"
-                  type="button" role="tab" aria-controls="employee-tasks-pane" aria-selected="false">Tasks</button>
+                  type="button" role="tab" aria-controls="employee-tasks-pane" aria-selected="false">Training</button>
               </li>
               <li class="nav-item" role="presentation">
                 <button class="nav-link" id="attribute-review" data-bs-toggle="tab" data-bs-target="#attribute-review-pane"

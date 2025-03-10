@@ -41,7 +41,7 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link border-bottom gap-2" href="/dashboard">
+                <a class="nav-link border-bottom gap-2" href="#">
                   <i class="bi bi-person-check"></i>
                   Appraiser
                 </a>
