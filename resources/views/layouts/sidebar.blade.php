@@ -19,7 +19,7 @@
                   </div>
                 </a>
               </li>
-              <li class="nav-item">
+              <!-- <li class="nav-item">
                 <a class="nav-link border-bottom gap-2" href="#">
                   <div>
                     <svg class="review-icon" viewBox="0 0 40 40" fill="none"
@@ -39,13 +39,13 @@
                   </div>
                   Review
                 </a>
-              </li>
-              <li class="nav-item">
+              </li> -->
+              <!-- <li class="nav-item">
                 <a class="nav-link border-bottom gap-2" href="#">
                   <i class="bi bi-person-check"></i>
                   Appraiser
                 </a>
-              </li>
+              </li> -->
 
               <!-- <li class="nav-item">
                 <a class="nav-link border-bottom gap-2" href="{{ route('administration')}}">

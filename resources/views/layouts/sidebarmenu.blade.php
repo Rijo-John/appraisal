@@ -12,25 +12,12 @@
                 <button class="nav-link" id="employee-tasks" data-bs-toggle="tab" data-bs-target="#employee-tasks-pane"
                   type="button" role="tab" aria-controls="employee-tasks-pane" aria-selected="false">Training</button>
               </li>
-              <li class="nav-item" role="presentation">
+              <!-- <li class="nav-item" role="presentation">
                 <button class="nav-link" id="attribute-review" data-bs-toggle="tab" data-bs-target="#attribute-review-pane"
                   type="button" role="tab" aria-controls="attribute-review-pane" aria-selected="false">Attribute Review</button>
               </li>
               <li class="nav-item" role="presentation">
                 <button class="nav-link" id="value-creation" data-bs-toggle="tab" data-bs-target="#value-creation-pane"
                   type="button" role="tab" aria-controls="value-creation-pane" aria-selected="false">Value Creation</button>
-              </li>
-              @if(Auth::check() && Auth::user()->role == 1)
-              <!-- <li class="nav-item" role="presentation">
-                <a href="{{ route('assign.admin') }}" class="nav-link" id="assignadmin" data-bs-toggle="tab" data-bs-target="#assign-tab-pane" type="button"
-                  role="tab" aria-controls="assign-tab-pane" aria-selected="true">Assign Admin</a>
               </li> -->
-              @endif
-
-              @if(Auth::check() && (Auth::user()->role == 1 || Auth::user()->role == 2))
-              <!-- <li class="nav-item" role="presentation">
-                <a href="{{ route('appraisal.view') }}" class="nav-link" id="appraisal" data-bs-toggle="tab" data-bs-target="#appraisal-tab-pane" type="button"
-                  role="tab" aria-controls="appraisal-tab-pane" aria-selected="true">Appraisal</a>
-              </li> -->
-              @endif
             </ul>

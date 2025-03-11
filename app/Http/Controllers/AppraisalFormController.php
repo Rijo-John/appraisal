@@ -73,6 +73,7 @@ class AppraisalFormController extends Controller
                                     ->select('*')
                                     ->where('appraisal_cycle', $appraisalCycle)
                                     ->where('employee_heads_id', $userHeadsId)
+                                    ->where('appraisal_id', $appraisal_form_id)
                                     ->get();
             $goalWiseData = [];
             foreach ($submitted_goal_ratings as $item) {
