@@ -11,12 +11,13 @@
           <div class="offcanvas-body d-md-flex flex-column pt-lg-3">
             <ul class="nav flex-column">
               <li class="nav-item">
-                <a class="nav-link border-bottom gap-2 active" href="#">
+                <a class="nav-link border-bottom gap-2 active" href="/my-appraisal">
 
-                  <i class="bi bi-person-up"></i>
+                  <i class="bi bi-person-up" ></i>
                   <div>
                     My Appraisal
                   </div>
+                  <span></span>
                 </a>
               </li>
               <!-- <li class="nav-item">

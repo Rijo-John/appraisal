@@ -1,3 +1,4 @@
+<div class="card">
 <div class="card-body card-body-scrollable-content">
     <div class="row align-items-center">
         <div class="col">
@@ -27,7 +28,7 @@
     <table class="table table-bordered">
     <thead>
     <tr>
-    <th>#</th>
+    <th class="text-center">#</th>
     <th>Goals</th>
     <th>Rating</th>
     <th>Comments &amp; Evidence</th>
@@ -58,7 +59,7 @@
     </table>
     </div>
     </div>
-    <div class="row">
+    <div class="row mb-4">
     <div class="col">
     <textarea   name="taskdetails{{ $project->parats_project_id }}" class="form-control" placeholder="Task Details" style="height: 83px;"></textarea>
     </div>
@@ -85,7 +86,7 @@
     <table class="table table-bordered">
     <thead>
     <tr>
-    <th>#</th>
+    <th class="text-center">#</th>
     <th>Goals</th>
     <th>Rating</th>
     <th>Comments &amp; Evidence</th>
@@ -131,7 +132,7 @@
                         <table class="table table-bordered">
                           <thead>
                           <tr>
-                              <th>#</th>
+                              <th class="text-center">#</th>
                               <th>Leaning Goals</th>
                               <th>Overall Weightage</th>
                               <th>Goal Status</th> 
@@ -139,13 +140,13 @@
                       </thead>
                       <tbody>
                         <tr>
-                          <td>1</td>
+                          <td class="text-center">1</td>
                           <td>
                             <h6>Learning & Development</h6>
                             <p>Completing a mandatory 50 hours learning annually with at least 25% of training through Vigyan</p>
                           </td>
-                          <td>50</td>
-                          <td>Acheived</td>
+                          <td class="text-center">50</td>
+                          <td class="text-center">90%</td>
                         </tr>
                       </tbody>
                       </table>
@@ -165,4 +166,5 @@
 
 
 
+</div>
 </div>
