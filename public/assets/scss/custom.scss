@@ -282,47 +282,7 @@ header {
     width: 125px;
   } 
 }
-@media (max-width: 767px) {
-  .content-wrapper, .content-wrapper-no-left-tab{
-    padding-left: 15px;
-  }
-  .spacer-md{
-    padding: 20px;
-  }
-  .sidebar {
-    height: 0;
-    padding: 0;
 
-    .nav .bi {
-      width: 24px;
-      font-size: 20px;
-    }
-  }
-
-  .nav-link {
-    display: flex;
-    align-items: center;
-  }
-  .review-icon {
-    width: 24px;
-    height: 24px;
-  }
-  .sidebar{
-    bottom: 0;
-    .nav-link {
-      font-size: $body-font-normal;
-    }
-  }
-  .navbar-brand{
-    img{
-      max-width: 60vw;
-    }
-  }
-
-  .dropdown-menu.dropdown-menu-start-sm{
-    transform: translate(111px, 0px)!important;
-  }
-}
 .count{
   display: inline-block;
   width: 25px;
@@ -366,3 +326,80 @@ header {
   display: inline-block;
 }
 @keyframes l3 {to{transform: rotate(1turn)}}
+
+.form-control{
+  padding: 9px 9px;
+}
+h6{
+  font-size: 14px;
+}
+.login-bg-wrapper{
+  background: url(../images/login-bg.png) no-repeat;
+  background-size: cover;
+  height: 100%;
+}
+.logo-sidebar{
+  background: $white;
+  width: 400px;
+  padding: 40px;
+  position: absolute;
+  right: 100px;
+  top: 0;
+  height: 270px;
+  bottom: 0;
+  margin: auto;
+  border-radius: 8px;
+  img{
+    max-width: 100%;
+  }
+}
+.login-bottom-content{
+  text-align: center;
+  left: 0;
+  right: 0;
+}
+@media (max-width: 767px) {
+  .content-wrapper, .content-wrapper-no-left-tab{
+    padding-left: 15px;
+  }
+  .spacer-md{
+    padding: 20px;
+  }
+  .sidebar {
+    height: 0;
+    padding: 0;
+
+    .nav .bi {
+      width: 24px;
+      font-size: 20px;
+    }
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+  }
+  .review-icon {
+    width: 24px;
+    height: 24px;
+  }
+  .sidebar{
+    bottom: 0;
+    .nav-link {
+      font-size: $body-font-normal;
+    }
+  }
+  .navbar-brand{
+    img{
+      max-width: 60vw;
+    }
+  }
+
+  .dropdown-menu.dropdown-menu-start-sm{
+    transform: translate(111px, 0px)!important;
+  }
+  .logo-sidebar{
+    left: 20px;
+    right: 20px;
+  }
+}

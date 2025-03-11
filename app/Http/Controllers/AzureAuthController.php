@@ -60,10 +60,16 @@ class AzureAuthController extends Controller
             session(['appraisal_form_id' => $appraisalFormId]);
             session(['current_appraisal_cycle' => $currentAppraisalCycleData->id]);
             session(['appraiserOfficerName' => $appraiserOfficerName]);
+            session(['userDepartment' => $user['department_id']]);
             // If user exists, log them in
             //Auth::login($user);
             Auth::guard('web')->login($user);
             //return redirect()->route('dashboard')->with('success', 'Successfully logged in!');
+
+            $nonTechnicalDepartments = array_map('intval', explode(',', env('NON_TECHNICAL_DEPARTMENT_IDS', '')));
+            if (in_array($user['department_id'], $nonTechnicalDepartments)) {
+                return redirect()->route('myappraisalnontechnical')->with('success', 'Successfully logged in!');
+            }
             return redirect()->route('myappraisal')->with('success', 'Successfully logged in!');
         } else {
             // If user does not exist, show an error

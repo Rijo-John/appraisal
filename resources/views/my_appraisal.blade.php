@@ -4,7 +4,19 @@
     <div class="row">
           <div class="col">
             @include('layouts.sidebarmenu') 
+            @php
+                // Retrieve the user's department from the session
+                $userDepartment = session('userDepartment');
+
+                // Retrieve non-technical department IDs from .env and convert them to an array
+                $nonTechnicalDepartments = explode(',', env('NON_TECHNICAL_DEPARTMENT_IDS', ''));
+            @endphp
+
+            @if(in_array($userDepartment, $nonTechnicalDepartments))
+            <form action="{{ route('employeeGoalSubmitNonTechnical') }}" method="POST" enctype="multipart/form-data">
+            @else
             <form action="{{ route('employeeGoalSubmit') }}" method="POST" enctype="multipart/form-data">
+            @endif
             @csrf
             <div class="row align-items-center mb-3">
               <div class="col">
@@ -23,8 +35,13 @@
 
               </div>
               <!-- my Goals-->
+              
               <div class="tab-pane fade" id="employee-goals-pane" role="tabpanel" aria-labelledby="employee-goals-tab" tabindex="0">
-                    @include('goals_rating')
+                @if(in_array($userDepartment, $nonTechnicalDepartments))
+                    @include('my_appraisal_non_technical')
+                @else
+                    @include('goals_rating') 
+                @endif
               </div>
              
               <div class="tab-pane fade" id="employee-tasks-pane" role="tabpanel" aria-labelledby="employee-tasks-tab" tabindex="0">
