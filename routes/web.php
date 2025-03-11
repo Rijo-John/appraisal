@@ -10,6 +10,7 @@ use App\Http\Controllers\AppraisalMasterController;
 use App\Http\Controllers\AttributeReviewController;
 use App\Http\Controllers\AttributeQuestionController; 
 use App\Http\Controllers\AppraisalFormController;
+use App\Http\Controllers\AppraisalNonTechnicalFormController;
 use App\Http\Controllers\GoalController;
 /*
 |--------------------------------------------------------------------------
@@ -60,7 +61,8 @@ Route::middleware(['auth:web'])->group(function () {
     //Route::get('/employee-goal-listing', [GoalController::class, 'index']);
     Route::post('/employee-goal-submit', [AppraisalFormController::class, 'submitEmpGoals'])->name('employeeGoalSubmit');
     Route::get('/my-appraisal', [AppraisalFormController::class, 'index'])->name('myappraisal');
-    Route::get('/non_technical', [AppraisalFormController::class, 'non_technical'])->name('non_technical');
+    Route::get('/my-appraisal-non-technical', [AppraisalNonTechnicalFormController::class, 'index'])->name('myappraisalnontechnical');
+    Route::post('/employee-goal-submit-non-technical', [AppraisalNonTechnicalFormController::class, 'submitEmpGoalsNonTechnical'])->name('employeeGoalSubmitNonTechnical');
     Route::middleware(['superadmin'])->group(function () {
         Route::get('/administration', [AdministrationController::class, 'index'])->name('administration');
         Route::get('/assign-admin', [AdminController::class, 'showAssignAdmin'])->name('assign.admin');

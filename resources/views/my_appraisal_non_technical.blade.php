@@ -58,7 +58,7 @@
                                                     <option value="1" <?= ($data->rating == 1) ? 'selected' : '' ?>>Not Achieved</option>
                                                 </select>
                                             </div>
-                                            <label  class="col-md-2 col-form-label col-auto-xxl">Project Name</label>
+                                            <!-- <label  class="col-md-2 col-form-label col-auto-xxl">Project Name</label>
                                             <div class="col-md-5">
                                                 <select name="project_{{ $goal->id }}_{{ $flag+1 }}" class="form-select">
                                                     <option value="0" <?= ($data->parats_project_id == 0) ? 'selected' : '' ?>>Not Applicable</option>
@@ -67,7 +67,7 @@
                                                     @endforeach 
                                                 </select>
                                                 
-                                            </div>
+                                            </div> -->
                                         </div>
 
                                         <div class="row mb-3">
@@ -110,8 +110,8 @@
                                     <div class="col">
                                         <h5>
                                             <span class="heading-color">Goal Rating</span> 
-                                            <span class="bi bi-plus-circle-fill pointer text-primary add-project" data-goal-id="{{ $goal->id }}"></span>
-                                            <input type="hidden"  name="hiddenCount{{ $goal->id }}" id="hiddenCount{{ $goal->id }}" value="1" />
+                                            
+                                           
                                         </h5>
                                     </div>
                                 </div>
@@ -121,7 +121,7 @@
                                         <div class="row mb-3">
                                             <label  class="col-md-2 col-form-label">Rating</label>
                                             <div class="col-md-3">
-                                                <select name="rating_{{ $goal->id }}_1" class="form-select">
+                                                <select name="rating_{{ $goal->id }}" class="form-select">
                                                     <option value="" selected>Select rating</option>
                                                     <option value="0" >Not Applicable</option>
                                                     <option value="10" >Achieved</option>
@@ -129,7 +129,7 @@
                                                     <option value="1" >Not Achieved</option>
                                                 </select>
                                             </div>
-                                            <label  class="col-md-2 col-form-label col-auto-xxl">Project Name</label>
+                                            <!-- <label  class="col-md-2 col-form-label col-auto-xxl">Project Name</label>
                                             <div class="col-md-5">
                                                 <select name="project_{{ $goal->id }}_1" class="form-select">
                                                     <option value="0" >Not Applicable</option>
@@ -138,20 +138,20 @@
                                                     @endforeach 
                                                 </select>
                                                 
-                                            </div>
+                                            </div> -->
                                         </div>
 
                                         <div class="row mb-3">
                                             <label  class="col-sm-2 col-form-label">Task Details</label>
                                             <div class="col-sm-10">
-                                                <textarea  name="remarks_{{ $goal->id }}_1" class="form-control" placeholder="Enter Task details.."></textarea>
+                                                <textarea  name="remarks_{{ $goal->id }}" class="form-control" placeholder="Enter Task details.."></textarea>
                                             </div>
                                         </div>
 
                                         <div class="row mb-3">
                                             <label  class="col-sm-2 col-form-label">Attachments</label>
                                             <div class="col-sm-5">
-                                                <input class="form-control" type="file" name="evidence_{{ $goal->id }}_1" id="formFile">
+                                                <input class="form-control" type="file" name="evidence_{{ $goal->id }}" id="formFile">
                                             </div>
                                         </div>
 
