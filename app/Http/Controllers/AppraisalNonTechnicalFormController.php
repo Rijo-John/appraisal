@@ -118,26 +118,42 @@ class AppraisalNonTechnicalFormController extends Controller
                         ->where('employee_heads_id', $userHeadsId)
                         ->get();
         $appraisalFormId = session('appraisal_form_id');
+        $validationRules = [];
+        foreach ($user_goals as $goals) {
+            $fileInputName = 'evidence_' . $goals->id;
+
+            // Define validation rules for each file
+            $validationRules[$fileInputName] = 'nullable|file|mimes:pdf,jpg|max:2048';
+        }
+        $request->validate($validationRules);
         foreach ($user_goals as $goals) {
 
             
                 $projectId = 0 ;
                 $ratingValue = 'rating_' . $goals->id;
                 $empremarks = 'remarks_' . $goals->id;
+
+                $fileInputName = 'evidence_' . $goals->id;
+                $attachmentPath = null;
+                if ($request->hasFile($fileInputName)) {
+                    $file = $request->file($fileInputName);
+                    $attachmentPath = $file->store('uploads/evidence', 'public'); // Save file in storage/app/public/uploads/evidence
+                }
                 
                 
-                    DB::table('employee_goal_ratings')->insert([
-                        'appraisal_cycle' => $appraisalCycle,
-                        'employee_heads_id' => $userHeadsId,
-                        'goal_id' => $goals->id,
-                        'parats_project_id' => 0,
-                        'rating' => $request->input($ratingValue),
-                        'employee_comment' => $request->input($empremarks),
-                        'appraisal_id' =>$appraisalFormId
-                    ]);
+                DB::table('employee_goal_ratings')->insert([
+                    'appraisal_cycle' => $appraisalCycle,
+                    'employee_heads_id' => $userHeadsId,
+                    'goal_id' => $goals->id,
+                    'parats_project_id' => 0,
+                    'rating' => $request->input($ratingValue),
+                    'employee_comment' => $request->input($empremarks),
+                    'appraisal_id' =>$appraisalFormId,
+                    'attachment' => $attachmentPath
+                ]);
         }
 
-        return redirect()->route('myappraisal');
+        return redirect()->route('myappraisal')->with('success', 'Goals submitted successfully.');
 
     }
 }
