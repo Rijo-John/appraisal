@@ -91,6 +91,10 @@ class AppraisalNonTechnicalFormController extends Controller
             'goalWiseData' => $goalWiseData,
         ]);
     }
+    /* 
+    @author ['sooraj r']
+    @method ['insert data in to the employee_goal_ratings  according to the goal']
+    */
 
     public function submitEmpGoalsNonTechnical(Request $request)
     {

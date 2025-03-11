@@ -12,6 +12,7 @@
                 // Retrieve non-technical department IDs from .env and convert them to an array
                 $nonTechnicalDepartments = explode(',', env('NON_TECHNICAL_DEPARTMENT_IDS', ''));
             @endphp
+            
             @if (session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     {{ session('success') }}
