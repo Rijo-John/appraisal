@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use App\Models\AppraisalCycle;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+
 
 class AppraisalNonTechnicalFormController extends Controller
 {
@@ -214,10 +216,28 @@ class AppraisalNonTechnicalFormController extends Controller
         foreach ($user_goals as $goals) {
             $fileInputName = 'evidence_' . $goals->id;
             $validationRules[$fileInputName] = 'nullable|file|mimes:pdf,jpg,png|max:2048';
-            $customMessages["$fileInputName.mimes"] = "The evidence file for this goal must be a PDF, JPG, or PNG.";
-            $customMessages["$fileInputName.max"] = "The evidence file for this goal must not be larger than 2MB.";
         }
-        $request->validate($validationRules, $customMessages);
+
+        $customMessages = [
+            'evidence_*.mimes' => "The evidence file must be a PDF, JPG, or PNG.",
+            'evidence_*.max' => "The evidence file must not be larger than 2MB."
+        ];
+
+        $validator = Validator::make($request->all(), $validationRules, $customMessages);
+
+        if ($validator->fails()) {
+            $errors = $validator->errors();
+
+            // Merge duplicate messages for 'evidence' files
+            if ($errors->hasAny(array_keys($validationRules))) {
+                $uniqueMessages = collect($errors->all())->unique()->values()->toArray();
+                return redirect()->back()->withErrors($uniqueMessages)->withInput();
+            }
+
+            return redirect()->back()->withErrors($errors)->withInput();
+        }
+
+        //$request->validate($validationRules, $customMessages);
 
         foreach ($user_goals as $goals) {
             $ratingValue = 'rating_' . $goals->id;
