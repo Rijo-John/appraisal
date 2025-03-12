@@ -62,22 +62,20 @@ class AzureAuthController extends Controller
             $appraiserOfficerName = ($appraisalFormData && $appraisalFormData->appraiser_officer_name)?$appraisalFormData->appraiser_officer_name:'';
             $appraisalFormId = ($appraisalFormData && $appraisalFormData->id)?$appraisalFormData->id:0;
 
-            //dd($appraisalFormData);
             session(['appraiser_officer_heads_id' => $appraiserOfficerHeadsId]);
             session(['appraisal_form_id' => $appraisalFormId]);
             session(['current_appraisal_cycle' => $currentAppraisalCycleData->id]);
             session(['appraiserOfficerName' => $appraiserOfficerName]);
             session(['userDepartment' => $user['department_id']]);
-            // If user exists, log them in
-            //Auth::login($user);
+           
             Auth::guard('web')->login($user);
-            //return redirect()->route('dashboard')->with('success', 'Successfully logged in!');
 
-            $nonTechnicalDepartments = array_map('intval', explode(',', env('NON_TECHNICAL_DEPARTMENT_IDS', '')));
-            if (in_array($user['department_id'], $nonTechnicalDepartments)) {
+            if (session('technical') == 0) {
                 return redirect()->route('myappraisalnontechnical')->with('success', 'Successfully logged in!');
             }
             return redirect()->route('myappraisal')->with('success', 'Successfully logged in!');
+
+            
         } else {
             // If user does not exist, show an error
             return response()->view('errors.unauthorized', ['email' => $azureUser->getEmail()], 403);
