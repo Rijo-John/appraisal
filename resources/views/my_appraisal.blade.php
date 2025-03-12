@@ -4,14 +4,6 @@
     <div class="row">
           <div class="col">
             @include('layouts.sidebarmenu') 
-
-            @php
-                // Retrieve the user's department from the session
-                $userDepartment = session('userDepartment');
-
-                // Retrieve non-technical department IDs from .env and convert them to an array
-                $nonTechnicalDepartments = explode(',', env('NON_TECHNICAL_DEPARTMENT_IDS', ''));
-            @endphp
             
             @if (session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -31,7 +23,7 @@
                 </div>
             @endif
 
-            @if(in_array($userDepartment, $nonTechnicalDepartments))
+            @if(session('technical') == 0)
             <form action="{{ route('employeeGoalSubmitNonTechnical') }}" method="POST" enctype="multipart/form-data">
             @else
             <form action="{{ route('employeeGoalSubmit') }}" method="POST" enctype="multipart/form-data">
@@ -42,8 +34,8 @@
                 <h3 class="heading-color mb-0">My Appraisal</h3>
               </div>
               <div class="col-auto">
-                <button type="submit" class="btn btn-success mx-2">Save As Draft</button>
-                <button type="button" class="btn btn-primary">Submit</button>
+                <button type="submit" name="action" value="draft"class="btn btn-success mx-2">Save As Draft</button>
+                <button type="submit" name="action" value="finalise" class="btn btn-primary">Finalise</button>
               </div>
             </div>
            
@@ -56,7 +48,7 @@
               <!-- my Goals-->
               
               <div class="tab-pane fade" id="employee-goals-pane" role="tabpanel" aria-labelledby="employee-goals-tab" tabindex="0">
-                @if(in_array($userDepartment, $nonTechnicalDepartments))
+                @if(session('technical') == 0)
                     @include('my_appraisal_non_technical')
                 @else
                     @include('goals_rating') 
@@ -81,4 +73,17 @@
           </div>
         </div>
         </main>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                setTimeout(function () {
+                    let successAlert = document.querySelector('.alert.alert-success'); // Select only success alerts
+                    if (successAlert) {
+                        let bsAlert = new bootstrap.Alert(successAlert);
+                        bsAlert.close();
+                    }
+                }, 3000); // 3 seconds timeout for success message
+            });
+        </script>
+
   @endsection
