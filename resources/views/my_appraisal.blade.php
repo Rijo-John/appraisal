@@ -34,8 +34,8 @@
                 <h3 class="heading-color mb-0">My Appraisal</h3>
               </div>
               <div class="col-auto">
-                <button type="submit" name="action" value="draft"class="btn btn-success mx-2">Save As Draft</button>
-                <button type="submit" name="action" value="finalise" class="btn btn-primary">Finalise</button>
+                <button type="submit" name="action" value="draft"class="btn btn-success mx-2 {{ $selfFinalise == 1 ? 'disabled' : '' }}" >Save As Draft</button>
+                <button type="submit" name="action" value="finalise" class="btn btn-primary {{ $selfFinalise == 1 ? 'disabled' : '' }}">Finalise</button>
               </div>
             </div>
            

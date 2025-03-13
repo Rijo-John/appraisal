@@ -22,38 +22,32 @@ class AppraisalNonTechnicalFormController extends Controller
         $userHeadsId = $sessionData['logged_user_heads_id'];
         $appraisalCycle = $sessionData['current_appraisal_cycle'];
         $appraisal_form_id = $sessionData['appraisal_form_id'];
-        /**
-        * Grant access to the employee for the appraisal form. 
-        * Here, we will check if the logged-in user is added to the current appraisal cycle.
-        */
+        
         if($appraisal_form_id == 0)
         {
             return view('user_not_in_appraisal');
         }
 
-        /**
-        * Employee details Array 
-        * This block of code contains the self appraisal logged in user details
-        */
-            $employeeData = [
-                'profile_pic' => $user->profile_pic,
-                'name'  => $user->first_name . ' ' . $user->last_name,
-                'emp_code' => $user->emp_code,
-                'designation_name' => $user->designation_name,
-                'date_of_join' => $user->date_of_join,
-                'appraisal_period' => $appraisalData->profile_pic,
-                'appraiserOfficerName' => $appraiserOfficerName
-            ];
-        /**
-        * 
-        * Code Ends Here
-        *
-        */
+        // Fetch self_finalise status from the appraisal_form table
+        $selfFinalise = DB::table('appraisal_form')
+            ->where('employee_heads_id', $userHeadsId)
+            ->where('id', $appraisal_form_id)
+            ->where('appraisal_cycle_id', $appraisalCycle)
+            ->value('self_finalise');
 
-        /**
-        * Employee Goal details Array 
-        * This block of code contains the goal and project details of the logged in user for the current appraisal cycle
-        */
+        
+        $employeeData = [
+            'profile_pic' => $user->profile_pic,
+            'name'  => $user->first_name . ' ' . $user->last_name,
+            'emp_code' => $user->emp_code,
+            'designation_name' => $user->designation_name,
+            'date_of_join' => $user->date_of_join,
+            'appraisal_period' => $appraisalData->profile_pic,
+            'appraiserOfficerName' => $appraiserOfficerName
+        ];
+        
+
+        
             $user_goals =  DB::table('goals')
                             ->select('id','goal','employee_heads_id','appraisal_cycle','weightage')
                             ->where('appraisal_cycle', $appraisalCycle)
@@ -79,19 +73,13 @@ class AppraisalNonTechnicalFormController extends Controller
                 }
                 $goalWiseData[$goalId][] = $item;
             }
-        /**
-        * 
-        * Code Ends Here
-        *
-        */
-        //dd($goalWiseData);
-
-        //return view('my_appraisal', compact('user','appraisalData','appraiserOfficerName','user_goals', 'user_projects', 'goalWiseData'));
+       
         return view('my_appraisal', [
             'employeeData' => $employeeData,
             'user_goals' => $user_goals,
             'user_projects' => $user_projects,
             'goalWiseData' => $goalWiseData,
+            'selfFinalise' => $selfFinalise
         ]);
     }
     /* 
@@ -102,6 +90,7 @@ class AppraisalNonTechnicalFormController extends Controller
    
     public function submitEmpGoalsNonTechnical(Request $request){
         $sessionData = session()->all();
+       // dd($sessionData);
         $appraiserOfficerName = $sessionData['appraiserOfficerName'];
         $userHeadsId = $sessionData['logged_user_heads_id'];
         $appraisalCycle = $sessionData['current_appraisal_cycle'];
@@ -195,6 +184,14 @@ class AppraisalNonTechnicalFormController extends Controller
                 'appraisal_form_id' => $appraisalFormId,
                 'attachment' => $attachmentPath
             ]);
+        }
+
+        if ($request->input('action') === 'finalise') {
+            DB::table('appraisal_form')
+                ->where('employee_heads_id', $userHeadsId)
+                ->where('id', $appraisalFormId)
+                ->where('appraisal_cycle_id', $appraisalCycle)
+                ->update(['self_finalise' => 1]);
         }
 
         return redirect()->route('myappraisalnontechnical')->with('success', 'Goals submitted successfully.');
