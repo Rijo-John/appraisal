@@ -50,7 +50,7 @@
                                         <div class="row mb-3">
                                             <label  class="col-md-2 col-form-label">Rating <span class="text-danger">*</span></label>
                                             <div class="col-md-3">
-                                                <select name="rating_{{ $goal->id }}_{{ $flag+1 }}" class="form-select">
+                                                <select name="rating_{{ $goal->id }}" class="form-select">
                                                     <option value="">Select rating</option>                                                   
                                                     <option value="10" <?= ($data->rating == 10) ? 'selected' : '' ?>>Achieved</option>
                                                     <option value="5" <?= ($data->rating == 5) ? 'selected' : '' ?>>Partially Achieved</option>
@@ -73,7 +73,7 @@
                                         <div class="row mb-3">
                                             <label  class="col-sm-2 col-form-label">Task Details</label>
                                             <div class="col-sm-10">
-                                                <textarea  name="remarks_{{ $goal->id }}_{{ $flag+1 }}" class="form-control" placeholder="Enter Task details.."><?=$data->employee_comment?></textarea>
+                                                <textarea  name="remarks_{{ $goal->id }}" class="form-control" placeholder="Enter Task details.."><?=$data->employee_comment?></textarea>
                                             </div>
                                         </div>
 
