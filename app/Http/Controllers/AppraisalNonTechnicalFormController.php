@@ -15,6 +15,7 @@ class AppraisalNonTechnicalFormController extends Controller
 {
    public function index(Request $request){
         $sessionData = session()->all();
+        //dd($sessionData);
         $appraiserOfficerName = $sessionData['appraiserOfficerName'];
         $appraisalData = AppraisalCycle::select('appraisal_period')->where('status',1)->first();
         $user = Auth::user();

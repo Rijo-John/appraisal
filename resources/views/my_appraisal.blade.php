@@ -23,7 +23,7 @@
                 </div>
             @endif
 
-            @if(session('technical') == 0)
+            @if(session('appraisal_category') == 2)
             <form action="{{ route('employeeGoalSubmitNonTechnical') }}" method="POST" enctype="multipart/form-data">
             @else
             <form action="{{ route('employeeGoalSubmit') }}" method="POST" enctype="multipart/form-data">
@@ -48,7 +48,7 @@
               <!-- my Goals-->
               
               <div class="tab-pane fade" id="employee-goals-pane" role="tabpanel" aria-labelledby="employee-goals-tab" tabindex="0">
-                @if(session('technical') == 0)
+                @if(session('appraisal_category') == 2)
                     @include('my_appraisal_non_technical')
                 @else
                     @include('goals_rating') 
