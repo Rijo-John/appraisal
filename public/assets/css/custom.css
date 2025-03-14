@@ -11961,7 +11961,7 @@ header {
 
 .content-wrapper {
   padding-top: 25px;
-  padding-left: 135px;
+  padding-left: 150px;
 }
 
 .content-wrapper-no-left-tab {
@@ -12007,8 +12007,11 @@ header {
     padding-right: 30px;
   }
   .card-body-scrollable-content {
-    max-height: calc(100vh - 140px);
+    max-height: calc(100vh - 160px);
     overflow-y: auto;
+    margin: 10px 0;
+    padding-top: 5px;
+    padding-bottom: 5px;
   }
   .sidebar .offcanvas-lg {
     position: -webkit-sticky;
@@ -12020,6 +12023,7 @@ header {
   }
   .offcanvas-body .nav-link {
     text-align: center;
+    width: 100%;
   }
   .logout-btn {
     position: absolute;
@@ -12031,6 +12035,7 @@ header {
     position: absolute;
     bottom: 0;
     top: 50px;
+    width: 116px;
   }
 }
 @media (min-width: 992px) {
@@ -12060,7 +12065,7 @@ header {
     display: block;
     position: absolute;
     z-index: 9;
-    left: 100px;
+    left: 116px;
     background: white;
     top: 51px;
     bottom: 0;
@@ -12073,7 +12078,7 @@ header {
     display: inline-block;
   }
   .content-wrapper {
-    padding-left: 270px;
+    padding-left: 290px;
   }
   .hr-space-xl {
     margin-top: 40px;
@@ -12215,6 +12220,19 @@ h6, .h6 {
     left: 20px;
     right: 20px;
   }
+}
+table.dataTable thead th, table.dataTable thead td, table.dataTable.no-footer {
+  border-bottom: 1px solid #adb5bd;
+}
+
+table.dataTable {
+  border-collapse: collapse;
+  border-color: #adb5bd;
+  width: 100% !important;
+}
+
+.dataTables_wrapper .dataTables_filter {
+  margin-bottom: 10px;
 }
 
 /*# sourceMappingURL=custom.css.map */

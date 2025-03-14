@@ -1,11 +1,20 @@
 @extends('layouts.app')
 @section('content')
 <main class="col  ms-sm-auto  content-wrapper-no-left-tab">
+    <div class="row align-items-center mb-3">
+        <div class="col">
+            <h3 class="heading-color mb-0">Appraisal Data</h3>
+        </div>
+        <div class="col-auto">
+            <button id="syncButton" class="btn btn-primary " >Sync Appraisal Users</button>
+        </div>
+    </div>
+    
 <div class="card">
     <div class="card-body">
         <div class="row">
             <div class="col">
-                <div class="container mt-5">
+                
                     
 
                     
@@ -22,13 +31,13 @@
                     <!-- Success Message -->
                     <div id="success-message" class="alert alert-success d-none"></div>
 
-                </div>
+             
 
-                <div class="container mt-5">
-                    <h2>Appraisal Data</h2>
-                    <button id="syncButton" class="btn btn-primary mb-3" style="display: block;">Sync Appraisal Users</button>
+                <div class="container">
+                    
+                    
                     <table id="appraisalTable" class="table table-bordered">
-                        <thead class="table-dark">
+                        <thead >
                             <tr>
                                 <th>Employee Name</th>
                                 <th>Designation</th>
@@ -42,16 +51,18 @@
     <!-- Modal -->
     <!-- Modal -->
                     <div class="modal fade" id="appraisalModal" tabindex="-1" aria-labelledby="appraisalModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-lg">
+                        <div class="modal-dialog modal-xl modal-dialog-scrollable">
                             <div class="modal-content">
+
                                 <div class="modal-header">
                                     <h5 class="modal-title" id="appraisalModalLabel">Synced Appraisal Users</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
-                                <div class="modal-body">
-                                    <form id="appraisalForm" method="POST">
+                                <form id="appraisalForm" method="POST">
+                                <div class="modal-body" style="max-height: calc(100vh - 173px);">
+                                    
                                         <table id="appraisalDataTable" class="table table-bordered">
-                                            <thead class="table-dark">
+                                            <thead>
                                                 <tr>
                                                     <th>
                                                         <input type="checkbox" id="selectAll" checked> <!-- Select All Checkbox -->
@@ -68,9 +79,13 @@
                                                 <!-- Data will be appended dynamically -->
                                             </tbody>
                                         </table>
-                                        <button type="submit" class="btn btn-primary mt-3">Submit</button>
-                                    </form>
+                                        
+                                  
                                 </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary mt-3">Submit</button>
+                                </div>  
+                            </form>
                             </div>
                         </div>
                     </div>

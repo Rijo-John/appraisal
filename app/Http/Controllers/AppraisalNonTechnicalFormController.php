@@ -65,6 +65,11 @@ class AppraisalNonTechnicalFormController extends Controller
                                     ->where('appraisal_cycle', $appraisalCycle)
                                     ->where('employee_heads_id', $userHeadsId)
                                     ->get();
+            $submittedGeneralData = DB::table('general_data_by_appraisee')
+                        ->where('appraisal_cycle', $appraisalCycle)
+                        ->where('employee_heads_id', $userHeadsId)
+                        ->where('appraisal_form_id', $appraisal_form_id)
+                        ->first();
             $goalWiseData = [];
             foreach ($submitted_goal_ratings as $item) {
                 $goalId = $item->goal_id;
@@ -79,7 +84,8 @@ class AppraisalNonTechnicalFormController extends Controller
             'user_goals' => $user_goals,
             'user_projects' => $user_projects,
             'goalWiseData' => $goalWiseData,
-            'selfFinalise' => $selfFinalise
+            'selfFinalise' => $selfFinalise,
+            'submittedGeneralData'=>$submittedGeneralData
         ]);
     }
     /* 
@@ -89,11 +95,22 @@ class AppraisalNonTechnicalFormController extends Controller
 
    
     public function submitEmpGoalsNonTechnical(Request $request){
+        //dd($request->all());
         $sessionData = session()->all();
        // dd($sessionData);
         $appraiserOfficerName = $sessionData['appraiserOfficerName'];
         $userHeadsId = $sessionData['logged_user_heads_id'];
         $appraisalCycle = $sessionData['current_appraisal_cycle'];
+        $appraisalFormId = session('appraisal_form_id');
+
+        $isFinalised = DB::table('appraisal_form')
+                ->where('employee_heads_id', $userHeadsId)
+                ->where('id', $appraisalFormId)
+                ->where('appraisal_cycle_id', $appraisalCycle)
+                ->value('self_finalise');
+        if ($isFinalised == 1) {
+            return redirect()->back()->withErrors(['error' => 'You cannot submit goals as they have already been finalised.']);
+        }
 
         $submittedGoalRatings = DB::table('employee_goal_ratings')
             ->where('appraisal_cycle', $appraisalCycle)
@@ -109,13 +126,26 @@ class AppraisalNonTechnicalFormController extends Controller
 
         }
 
+        $submittedGeneralData = DB::table('general_data_by_appraisee')
+            ->where('appraisal_cycle', $appraisalCycle)
+            ->where('employee_heads_id', $userHeadsId)
+            ->where('appraisal_form_id', $appraisalFormId)
+            ->exists();
+        if($submittedGeneralData){
+            DB::table('general_data_by_appraisee')
+                ->where('appraisal_cycle', $appraisalCycle)
+                ->where('employee_heads_id', $userHeadsId)
+                ->where('appraisal_form_id', $appraisalFormId)
+                ->delete();
+        }
+
         $user_goals = DB::table('goals')
             ->select('id', 'goal', 'employee_heads_id', 'appraisal_cycle', 'weightage')
             ->where('appraisal_cycle', $appraisalCycle)
             ->where('employee_heads_id', $userHeadsId)
             ->get();
 
-        $appraisalFormId = session('appraisal_form_id');
+        
         $validationRules = [];
         $customMessages = [];
 
@@ -184,7 +214,17 @@ class AppraisalNonTechnicalFormController extends Controller
                 'appraisal_form_id' => $appraisalFormId,
                 'attachment' => $attachmentPath
             ]);
+
+            
         }
+
+        DB::table('general_data_by_appraisee')->insert([
+            'appraisal_form_id' => $appraisalFormId,
+            'appraisal_cycle' => $appraisalCycle,
+            'employee_heads_id' => $userHeadsId,
+            'key_contributions' => $request->input('key_contribution'),
+            'suggestions_for_improvement' => $request->input('appraiser_comment')
+        ]);
 
         if ($request->input('action') === 'finalise') {
             DB::table('appraisal_form')
