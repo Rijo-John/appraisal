@@ -1,6 +1,11 @@
 @extends('layouts.app')
   @section('content')
   <main class="col  ms-sm-auto  content-wrapper">
+  @if(session('error-user-not-in-appraisal'))
+    <div class="alert alert-danger">
+        {{ session('error-user-not-in-appraisal') }}
+    </div>
+  @endif
     <div class="row">
           <div class="col">
             @include('layouts.sidebarmenu') 

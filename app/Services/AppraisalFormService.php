@@ -42,7 +42,10 @@ class AppraisalFormService
         }
 
         return $formattedResults;
-       
+    }
 
+    public function insertToGoalRatings($insertedData)
+    {
+        DB::table('employee_goal_ratings')->insert($insertedData);
     }
 }

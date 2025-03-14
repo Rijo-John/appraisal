@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use App\Models\AppraisalCycle;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Carbon\Carbon;
 
 class AppraisalFormController extends Controller
 {
@@ -17,6 +19,33 @@ class AppraisalFormController extends Controller
     {
         $this->appraisalFormService = $appraisalFormService;
     }
+    public function index2(){
+        
+        $baseUrl = env('VIGYAN_API_URL');
+        $params = [
+            'wstoken' => env('VIGYAN_API_TOKEN'),
+            'wsfunction' => env('VIGYAN_API_FUNCTION'),
+            'moodlewsrestformat' => 'json',
+            'start_date' => env('VIGYAN_API_STARTDATE'),
+            'end_date' => env('VIGYAN_API_ENDDATE'),
+            'email' => "rijo.j@thinkpalm.com",
+        ];
+    
+        // Make GET request using Laravel HTTP client
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json'
+        ])->get($baseUrl, $params);
+    
+        // Decode JSON response
+        $data = $response->json(); 
+    
+        // Debugging (Remove in production)
+        echo '<pre>'; print_r($data); 
+    
+       // $total_seconds = $data->total_dedication;
+        //$total_hours = $total_seconds / 3600;
+       // $vigyan_training_hours=number_format($total_hours, 2);
+    }
     public function index(Request $request){
         $sessionData = session()->all();
         $appraiserOfficerName = $sessionData['appraiserOfficerName'];
@@ -25,14 +54,157 @@ class AppraisalFormController extends Controller
         $userHeadsId = $sessionData['logged_user_heads_id'];
         $appraisalCycle = $sessionData['current_appraisal_cycle'];
         $appraisal_form_id = $sessionData['appraisal_form_id'];
+        $appraisalEndDate = Carbon::now()->format('Y-m-d');
+        //echo '<pre>'; print_r($user->email); die();
         /**
         * Grant access to the employee for the appraisal form. 
         * Here, we will check if the logged-in user is added to the current appraisal cycle.
         */
-        if($appraisal_form_id == 0)
-        {
-            return view('user_not_in_appraisal');
-        }
+            if($appraisal_form_id == 0)
+            {
+                return view('user_not_in_appraisal');
+            }
+        /**
+        * Get learning details from Vigyan 
+        * This block of code contains the vigyan learning hours and course details of the logged-in user
+        */
+            $vigyanCourseDetails = [];
+            $appraisalCycleData =  DB::table('appraisal_cycle')
+                                ->select('appraisal_cycle','appraisal_period_start','appraisal_period_end')
+                                ->where('id', $appraisalCycle)
+                                ->where('status', 1)
+                                ->get();
+            if($appraisalCycleData) {
+                if (!empty($appraisalCycleData) && !empty($appraisalCycleData[0]->appraisal_period_start) &&  !empty($appraisalCycleData[0]->appraisal_period_end) && $user->email!='') {
+                    $appraisalEndDate = $appraisalCycleData[0]->appraisal_period_end;
+                    $baseUrl = env('VIGYAN_API_URL');
+                    $params = [
+                        'wstoken' => env('VIGYAN_API_TOKEN'),
+                        'wsfunction' => env('VIGYAN_API_FUNCTION'),
+                        'moodlewsrestformat' => 'json',
+                        'start_date' => $appraisalCycleData[0]->appraisal_period_start,
+                        'end_date' => $appraisalCycleData[0]->appraisal_period_end,
+                        'email' => "aneesh.ks@thinkpalm.com", //$user->email
+                    ];
+                    $response = Http::withHeaders([
+                        'Content-Type' => 'application/json'
+                    ])->get($baseUrl, $params);
+                    $vigyanData = $response->json(); 
+
+                    $vigyanCourseDetails['courses'] = [];
+                    $vigyanCourseDetails['timeSpent'] = 0;
+                    $vigyanCourseDetails['calculatePercentage'] = 0;
+                    $vigyanCourseDetails['training_name'] = [];
+                    $vigyanCourseDetails['trainingTimeSpent'] = 0;
+                    $vigyanCourseDetails['totalVigyanTimeSpent'] = 0;
+
+                    if(count($vigyanData['vigyan_training_details']) > 0 || count($vigyanData['internal_hours']) > 0 )
+                    {
+                        $vigyanTime = 0;
+                        $trainingTime = 0;
+                        $vigyanCourseDetails['courses'] = [];
+                        $vigyanCourseDetails['timeSpent'] = 0;
+                        $vigyanCourseDetails['calculatePercentage'] = "NA";
+                        $vigyanCourseDetails['training_name'] = [];
+                        $vigyanCourseDetails['trainingTimeSpent'] = 0;
+                        $vigyanCourseDetails['totalVigyanTimeSpent'] = 0;
+                        if(count($vigyanData['vigyan_training_details']) > 0) {
+                            $totalDuration = 0; 
+                            foreach($vigyanData['vigyan_training_details'] as $index => $vigyan)
+                            {
+                                $vigyanCourseDetails['courses'][] = $vigyan['course_name'];
+                                $totalDuration += $vigyan['time_spent']; 
+                            }
+                            $hours = floor($totalDuration / 3600); 
+                            $minutes = floor(($totalDuration % 3600) / 60); 
+                            $vigyanCourseDetails['timeSpent'] = $hours." Hours ".$minutes ." Minutes";
+                            $vigyanTime = $totalDuration;
+                            $total_dedication = $vigyanData['total_dedication'];
+                            $targeted_hours_sec  = $vigyanData['targeted_hours'] * 60 * 60;
+                            
+                        }
+                        // else
+                        // {
+                        //     $vigyanCourseDetails['courses'] = [];
+                        //     $vigyanCourseDetails['timeSpent'] = 0;
+                        //     $vigyanCourseDetails['calculatePercentage'] = 0;
+                        //     $vigyanCourseDetails['training_name'] = [];
+                        //     $vigyanCourseDetails['trainingTimeSpent'] = 0;
+                        //     $vigyanCourseDetails['totalVigyanTimeSpent'] = 0;
+                        // }
+                        if(count($vigyanData['internal_hours']) > 0) {
+                            $totaltrainingDuration = 0; 
+                            foreach($vigyanData['internal_hours'] as $index => $training)
+                            {
+                                $vigyanCourseDetails['training_name'][] = $training['training_name'];
+                                $totaltrainingDuration += $training['time_spent']; 
+                            }
+                            $vigyanCourseDetails['trainingTimeSpent'] = $totaltrainingDuration." Hours";
+                            $trainingTime = $totaltrainingDuration;
+                            $totalVigyanTimeSpentSec = ($totaltrainingDuration*60*60)+$vigyanTime;
+                            $hours = floor($totalVigyanTimeSpentSec / 3600); 
+                            $minutes = floor(($totalVigyanTimeSpentSec % 3600) / 60); 
+                            $vigyanCourseDetails['totalVigyanTimeSpent'] = $hours." Hours ".$minutes ." Minutes";
+                        }
+                        // else
+                        // {
+                        //     $vigyanCourseDetails['courses'] = [];
+                        //     $vigyanCourseDetails['timeSpent'] = 0;
+                        //     $vigyanCourseDetails['calculatePercentage'] = 0;
+                        //     $vigyanCourseDetails['training_name'] = [];
+                        //     $vigyanCourseDetails['trainingTimeSpent'] = 0;
+                        //     $vigyanCourseDetails['totalVigyanTimeSpent'] = 0;
+                        // }
+                        if($total_dedication+$totalVigyanTimeSpentSec > 0 && $targeted_hours_sec >0)
+                        {
+                            $calculatePercentage = (($total_dedication+$totalVigyanTimeSpentSec)/$targeted_hours_sec) * 100;
+                            $vigyanCourseDetails['calculatePercentage'] = round($calculatePercentage,2);
+                        }
+                        
+                    }
+                   
+                } else {
+                    echo 'No valid appraisal period start date found.';
+                    exit();
+                }
+            }
+            
+
+        /**
+        * 
+        * Code Ends Here
+        *
+        */
+
+        /**
+        * Get Qualifications and Certifications from HEADS 
+        * This block of code contains the details of Qualifications and Certifications from HEADS 
+        */
+
+            $currentMonth = Carbon::now()->month;
+            $appraisalMonth = ($currentMonth < 7) ? 1 : 2;
+            $formattedAppraisalEndDate = Carbon::parse($appraisalEndDate)->format('Y-m');
+            $params = [
+                'url' => env('HEADS_CERTIFICATION_URL'),
+                'appraisalMonthType' => (int) $appraisalMonth,
+                'employeeId' => 11, // (int) $user->heads_id,
+                'appraisalMonth' => $formattedAppraisalEndDate //"2025-04",
+            ];
+            $certificationsfromHeads = $this->apiCallToGetCertificationDetailsHeads($params);
+            if (isset($certificationsfromHeads->AppraisalCertListDataResponse) && count($certificationsfromHeads->AppraisalCertListDataResponse) > 0) {
+                // Your logic here
+            }
+            else
+            {
+                $certificationsfromHeads->AppraisalCertListDataResponse = [];
+            }
+            
+        /**
+        * 
+        * Code Ends Here
+        *
+        */
+
 
         /**
         * Employee details Array 
@@ -45,7 +217,7 @@ class AppraisalFormController extends Controller
                 'designation_name' => $user->designation_name,
                 'date_of_join' => $user->date_of_join,
                 'appraisal_period' => $appraisalData->profile_pic,
-                'appraiserOfficerName' => $appraiserOfficerName
+                'appraiserOfficerName' => $appraiserOfficerName,
             ];
         /**
         * 
@@ -63,39 +235,78 @@ class AppraisalFormController extends Controller
                             ->where('employee_heads_id', $userHeadsId)
                             ->get();
 
-            $user_projects = DB::table('project_allocations')
-                            ->select('projects.parats_project_id','projects.project_name')
-                            ->leftJoin('projects', 'projects.parats_project_id', '=', 'project_allocations.parats_project_id')
-                            ->where('project_allocations.heads_id', $userHeadsId)
+            // $user_projects = DB::table('project_allocations')
+            //                 ->select('projects.parats_project_id','projects.project_name')
+            //                 ->leftJoin('projects', 'projects.parats_project_id', '=', 'project_allocations.parats_project_id')
+            //                 ->where('project_allocations.heads_id', $userHeadsId)
+            //                 ->get();
+            $user_projects = DB::table('project_allocations pa')
+                            ->select('p.project_name,p.id,pa.parats_project_id,pa.allocation_from,pa.allocation_to')
+                            ->leftJoin('projects p', 'pa.parats_project_id', '=', 'p.parats_project_id')
+                            ->where('pa.heads_id', $userHeadsId)
+                            ->where('p.id', '>', 0)
+                            ->where(function ($query) {
+                                $query->whereBetween('pa.allocation_from', ['2024-04-01', '2025-03-01'])
+                                      ->orWhereBetween('pa.allocation_to', ['2024-04-01', '2025-03-01']);
+                            })
+                            ->groupBy('p.project_code')
                             ->get();
-
+           
             $submitted_goal_ratings =  DB::table('employee_goal_ratings')
                                     ->select('*')
                                     ->where('appraisal_cycle', $appraisalCycle)
                                     ->where('employee_heads_id', $userHeadsId)
-                                    ->where('appraisal_id', $appraisal_form_id)
+                                    ->where('appraisal_form_id', $appraisal_form_id)
                                     ->get();
-            $goalWiseData = [];
+            $submitted_project_extra =  DB::table('project_extra')
+                                    ->select('*')
+                                    ->where('appraisal_cycle', $appraisalCycle)
+                                    ->where('employee_heads_id', $userHeadsId)
+                                    ->where('appraisal_form_id', $appraisal_form_id)
+                                    ->get();
+            $submitted_general_data =  DB::table('general_data_by_appraisee')
+                                    ->select('*')
+                                    ->where('appraisal_cycle', $appraisalCycle)
+                                    ->where('employee_heads_id', $userHeadsId)
+                                    ->where('appraisal_form_id', $appraisal_form_id)
+                                    ->get();
+            $projectWiseData = [];
+            
             foreach ($submitted_goal_ratings as $item) {
-                $goalId = $item->goal_id;
-                if (!isset($goalWiseData[$goalId])) {
-                    $goalWiseData[$goalId] = [];
+                $projectId = $item->parats_project_id;
+                if (!isset($projectWiseData[$projectId][$item->goal_id])) {
+                    $projectWiseData[$projectId][$item->goal_id] = [];
                 }
-                $goalWiseData[$goalId][] = $item;
+                $projectWiseData[$projectId][$item->goal_id][] = $item;
             }
+
+            $projectExtraData = [];
+            
+            foreach ($submitted_project_extra as $item) {
+                $projectId = $item->parats_project_id;
+                if (!isset($projectExtraData[$projectId])) {
+                    $projectExtraData[$projectId] = [];
+                }
+                $projectExtraData[$projectId][] = $item;
+            }
+            //echo '<pre>'; print_r($projectWiseData[239][8][0]->rating); die();
         /**
         * 
         * Code Ends Here
         *
         */
 
-
+        //echo '<pre>'; print_r($projectExtraData); die();
         //return view('my_appraisal', compact('user','appraisalData','appraiserOfficerName','user_goals', 'user_projects', 'goalWiseData'));
         return view('my_appraisal', [
             'employeeData' => $employeeData,
             'user_goals' => $user_goals,
             'user_projects' => $user_projects,
-            'goalWiseData' => $goalWiseData,
+            'projectWiseData' => $projectWiseData,
+            'project_extra' => $projectExtraData,
+            'general_data' => $submitted_general_data,
+            'vigyanCourseDetails' => $vigyanCourseDetails,
+            'certificationsfromHeads' => $certificationsfromHeads,
         ]);
     }
     public function submitEmpGoals(Request $request)
@@ -105,19 +316,61 @@ class AppraisalFormController extends Controller
         $appraiserOfficerName = $sessionData['appraiserOfficerName'];
         $userHeadsId = $sessionData['logged_user_heads_id'];
         $appraisalCycle = $sessionData['current_appraisal_cycle'];
+        $appraisal_form_id = $sessionData['appraisal_form_id'];
+        /**
+        * Grant access to the employee for the appraisal form. 
+        * Here, we will check if the logged-in user is added to the current appraisal cycle.
+        */
+            if($appraisal_form_id == 0) {
+                return redirect()->route('myappraisal')->with('error-user-not-in-appraisal', 'You are not part of the current appraisal cycle.');
+            }
+        /**
+        * Code Ends Here
+        */  
 
-        $submittedGoalRatings = DB::table('employee_goal_ratings')
-                                ->where('appraisal_cycle', $appraisalCycle)
-                                ->where('employee_heads_id', $userHeadsId)
-                                ->exists(); 
-        //echo '<pre>'; print_r($submittedGoalRatings); die();
-        if ($submittedGoalRatings) {
-            // Delete existing records
-            DB::table('employee_goal_ratings')
-                ->where('appraisal_cycle', $appraisalCycle)
-                ->where('employee_heads_id', $userHeadsId)
-                ->delete();
-        }
+        /**
+        * Delete goals rating and key contributions from table.
+        * Here, we will check whether goals rating and key contributions are already inserted if yes delete in case of updation. 
+        */
+            $submittedGoalRatings = DB::table('employee_goal_ratings')
+                                    ->where('appraisal_cycle', $appraisalCycle)
+                                    ->where('employee_heads_id', $userHeadsId)
+                                    ->where('appraisal_form_id', $appraisal_form_id)
+                                    ->exists(); 
+            $projectExtraDetails  = DB::table('project_extra')
+                                    ->where('appraisal_cycle', $appraisalCycle)
+                                    ->where('employee_heads_id', $userHeadsId)
+                                    ->where('appraisal_form_id', $appraisal_form_id)
+                                    ->exists(); 
+            $generalData  = DB::table('general_data_by_appraisee')
+                                    ->where('appraisal_cycle', $appraisalCycle)
+                                    ->where('employee_heads_id', $userHeadsId)
+                                    ->where('appraisal_form_id', $appraisal_form_id)
+                                    ->exists(); 
+            if ($submittedGoalRatings) {
+                DB::table('employee_goal_ratings')
+                    ->where('appraisal_cycle', $appraisalCycle)
+                    ->where('employee_heads_id', $userHeadsId)
+                    ->delete();
+            }
+            if ($projectExtraDetails) {
+                DB::table('project_extra')
+                    ->where('appraisal_cycle', $appraisalCycle)
+                    ->where('employee_heads_id', $userHeadsId)
+                    ->where('appraisal_form_id', $appraisal_form_id)
+                    ->delete();
+            }
+            if ($projectExtraDetails) {
+                DB::table('general_data_by_appraisee')
+                    ->where('appraisal_cycle', $appraisalCycle)
+                    ->where('employee_heads_id', $userHeadsId)
+                    ->where('appraisal_form_id', $appraisal_form_id)
+                    ->delete();
+            }
+        /**
+        * Code Ends Here
+        */  
+
         $user_goals =  DB::table('goals')
                        ->select(
                             'id','goal','employee_heads_id','appraisal_cycle','weightage'
@@ -130,31 +383,129 @@ class AppraisalFormController extends Controller
                         ->leftJoin('projects', 'projects.parats_project_id', '=', 'project_allocations.parats_project_id')
                         ->where('project_allocations.heads_id', $userHeadsId)
                         ->get();
-        //echo '<pre>'; print_r($request->input()); die();           
-        foreach ($user_projects as $projects) {
-           // $projectCount = $request->input('hiddenCount'.$goals->id);
+        //echo '<pre>'; print_r($request->input()); die();   
+        
+        foreach ($user_projects as $projects)
+        {
+            $taskdetails = 'taskdetails' . $projects->parats_project_id;
+            DB::table('project_extra')->insert([
+                'appraisal_cycle' => $appraisalCycle,
+                'appraisal_form_id' => $appraisal_form_id,
+                'employee_heads_id' => $userHeadsId,
+                'parats_project_id' => $projects->parats_project_id,
+                'task_details' => $request->input($taskdetails)
+            ]);
+           
+            
             foreach($user_goals as $goals)
             {
+                $goalRatingData = [];
                 $ratingValue = 'rating_' . $projects->parats_project_id . '_' . $goals->id;
                 $empremarks = 'remarks_' . $projects->parats_project_id . '_' . $goals->id;
-                
-                
-                    DB::table('employee_goal_ratings')->insert([
-                        'appraisal_cycle' => $appraisalCycle,
-                        'employee_heads_id' => $userHeadsId,
-                        'goal_id' => $goals->id,
-                        'parats_project_id' => $projects->parats_project_id,
-                        'rating' => $request->input($ratingValue),
-                        'employee_comment' => $request->input($empremarks)
-                    ]);
-                
+                $goalRatingData[] = [
+                    'appraisal_cycle' => $appraisalCycle,
+                    'appraisal_form_id'  => $appraisal_form_id,
+                    'employee_heads_id' => $userHeadsId,
+                    'goal_id' => $goals->id,
+                    'parats_project_id' => $projects->parats_project_id,
+                    'rating' => $request->input($ratingValue),
+                    'employee_comment' => $request->input($empremarks)
+                ];
+                $this->appraisalFormService->insertToGoalRatings($goalRatingData);
             }
+            
         }
 
-        return redirect()->route('myappraisal');
+        /**
+        * Insert general goals rating 
+        * This block of code insert  the goal and rating without any project
+        */
+       
+        foreach($user_goals as $goals)
+        {
+            $goalRatingDataOnce = [];
+            $ratingValue = 'general_rating_'  . $goals->id;
+            $empremarks = 'general_remarks_' . $goals->id;
+            $goalRatingDataOnce[] = [
+                'appraisal_cycle' => $appraisalCycle,
+                'appraisal_form_id'  => $appraisal_form_id,
+                'employee_heads_id' => $userHeadsId,
+                'goal_id' => $goals->id,
+                'parats_project_id' => -1,
+                'rating' => $request->input($ratingValue),
+                'employee_comment' => $request->input($empremarks)
+            ];
+            $this->appraisalFormService->insertToGoalRatings($goalRatingDataOnce);
+        }
+        /**
+        * Code Ends Here
+        */
+
+        /**
+        * Insert Suggestions and key contributions 
+        * This block of code insert the Suggestions and key contributions for Organization’s Improvement by the appraisee
+        */
+        
+            DB::table('general_data_by_appraisee')->insert([
+                'appraisal_cycle' => $appraisalCycle,
+                'appraisal_form_id'  => $appraisal_form_id,
+                'employee_heads_id' => $userHeadsId,
+                'key_contributions' => $request->input('key_contributions'),
+                'suggestions_for_improvement' => $request->input('suggestions_for_improvement'),
+                'workshops_attended' => $request->input('employee_workshops'),
+                'trainings_conducted' => $request->input('employee_training_conducted')
+            ]);
+            $this->appraisalFormService->insertToGoalRatings($goalRatingDataOnce);
+        
+        /**
+        * Code Ends Here
+        */
+        //return redirect()->route('myappraisal');
 
     }
 
+
+    private function apiCallToGetCertificationDetailsHeads(array $data)
+    {
+        $url = $data['url'];
+        $appraisalMonth = $data['appraisalMonth'];
+        $employeeId = $data['employeeId'];
+        $appraisalMonthType = $data['appraisalMonthType'];
+        $body = [
+            'appraisalMonth' => $appraisalMonth,
+            'employeeId' =>  $employeeId,
+            'appraisalMonthType' => $appraisalMonthType,
+        ];
+        $headers = [
+            'X-Api-Key' => env('HEADS_X_API_KEY'),
+            'Content-Type' => 'application/json-patch+json'
+        ];
+        $response = Http::withHeaders($headers)->post($url, $body);
+        
+        if ($response->failed()) {
+            dd("API Request Failed", $response->status(), $response->body());
+        }
+        if ($response->successful()) {
+            $data = $response->json();
+            $decryptedResponse = json_decode($this->decryptAppraisalResponse($data['response']));
+            return $decryptedResponse;
+        }
+      
+    }
+    public function decryptAppraisalResponse($encryptedData){
+        $key = env('APPRAISALUSER_ENCRYPTION_KEY'); 
+        $iv = env('APPRAISALUSER_IV'); 
+
+        $decrypted = openssl_decrypt(
+            base64_decode($encryptedData),
+            'aes-256-cbc',
+            $key,
+            OPENSSL_RAW_DATA,
+            $iv
+        );
+
+        return $decrypted;
+    }
     public function submitEmpGoalsOLd(Request $request)
     {
         //echo '<pre>'; print_r($request->input()); die();
