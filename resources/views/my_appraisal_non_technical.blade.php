@@ -1,6 +1,6 @@
 
 <div class="card">
-    <div class="card-body">
+    <div class="card-body card-body-scrollable-content">
 
         <div class="row align-items-center">
             <div class="col">
@@ -183,11 +183,11 @@
           <div class="row mt-3 mb-2">
             <div class="col-md-6">
               <p class="">Key Contributions</p>
-              <textarea name="key_contribution" id="key_contribution" class="form-control"><?=$submittedGeneralData->key_contributions?></textarea>
+              <textarea style="height:100px;" name="key_contribution" id="key_contribution" class="form-control"><?=$submittedGeneralData->key_contributions?></textarea>
             </div>
             <div class="col-md-6">
               <p class="">Appraiser Comments</p>
-              <textarea name="appraiser_comment" id="appraiser_comment" class="form-control"><?=$submittedGeneralData->suggestions_for_improvement?></textarea>
+              <textarea style="height:100px;" name="appraiser_comment" id="appraiser_comment" class="form-control"><?=$submittedGeneralData->suggestions_for_improvement?></textarea>
             </div>
           </div>
         </div>
