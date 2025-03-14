@@ -234,9 +234,36 @@ class CommonController extends Controller
         }
 
         $users = DB::table('appraisal_form_temp')->whereIn('id', $selectedUsers)->get();
+        //dd($users);
         $insertData = $users->map(function ($user) {
             $sessionData = session()->all();
             $currentAppraisalCycle = $sessionData['current_appraisal_cycle'];
+
+            $appraisalCategory=0;
+            $appraisalSubCategory=0;
+
+            if (in_array($user->department_id, explode(',', env('NON_TECHNICAL_DEPARTMENT_IDS', '')))) {
+                $appraisalCategory = 2;
+            }else{
+                if (in_array($user->designation_id, explode(',', env('TECHNICAL_DESIGNATION_IDS_OLD', '')))) {
+                    $appraisalCategory=3;
+                    $appraisalSubCategory=1;
+
+                    if(in_array($user->designation_id, explode(',', env('SE_DESIGNATION_IDS', '')))){
+                        $appraisalSubCategory=1;
+                    }else if(in_array($user->designation_id, explode(',', env('SSE_DESIGNATION_IDS', '')))){
+                        $appraisalSubCategory=2;
+                    }else if(in_array($user->designation_id, explode(',', env('TL_DESIGNATION_IDS', '')))){
+                        $appraisalSubCategory=3;
+                    }else if(in_array($user->designation_id, explode(',', env('TEST_DESIGNATION_IDS', '')))){
+                        $appraisalSubCategory=4;
+                    }
+                }else{
+                    $appraisalCategory=1;
+                }
+            }
+
+            
             return [
                 'employee_heads_id' => $user->employee_heads_id,
                 'employee_code' => $user->employee_code,
@@ -249,6 +276,8 @@ class CommonController extends Controller
                 'practise' => $user->practise,
                 'status'=>1,
                 'appraisal_cycle_id' =>$currentAppraisalCycle,
+                'appraisal_category' =>$appraisalCategory,
+                'appraisal_sub_category' =>$appraisalSubCategory,
                 'created_at' => Carbon::now()->toDateTimeString(), 
                 'updated_at' => Carbon::now()->toDateTimeString(),
             ];

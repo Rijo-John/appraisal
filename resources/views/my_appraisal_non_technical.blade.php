@@ -1,6 +1,6 @@
 
 <div class="card">
-    <div class="card-body">
+    <div class="card-body card-body-scrollable-content">
 
         <div class="row align-items-center">
             <div class="col">
@@ -48,14 +48,14 @@
                                 <div class="row project">
                                     <div class="col">
                                         <div class="row mb-3">
-                                            <label  class="col-md-2 col-form-label">Rating</label>
+                                            <label  class="col-md-2 col-form-label">Rating <span class="text-danger">*</span></label>
                                             <div class="col-md-3">
-                                                <select name="rating_{{ $goal->id }}_{{ $flag+1 }}" class="form-select">
-                                                    <option value="">Select rating</option>
-                                                    <option value="0" <?= ($data->rating == 0) ? 'selected' : '' ?>>Not Applicable</option>
+                                                <select name="rating_{{ $goal->id }}" class="form-select">
+                                                    <option value="">Select rating</option>                                                   
                                                     <option value="10" <?= ($data->rating == 10) ? 'selected' : '' ?>>Achieved</option>
                                                     <option value="5" <?= ($data->rating == 5) ? 'selected' : '' ?>>Partially Achieved</option>
                                                     <option value="1" <?= ($data->rating == 1) ? 'selected' : '' ?>>Not Achieved</option>
+                                                    <option value="0" <?= ($data->rating == 0) ? 'selected' : '' ?>>Not Applicable</option>
                                                 </select>
                                             </div>
                                             <!-- <label  class="col-md-2 col-form-label col-auto-xxl">Project Name</label>
@@ -73,19 +73,27 @@
                                         <div class="row mb-3">
                                             <label  class="col-sm-2 col-form-label">Task Details</label>
                                             <div class="col-sm-10">
-                                                <textarea  name="remarks_{{ $goal->id }}_{{ $flag+1 }}" class="form-control" placeholder="Enter Task details.."><?=$data->employee_comment?></textarea>
+                                                <textarea  name="remarks_{{ $goal->id }}" class="form-control" placeholder="Enter Task details.."><?=$data->employee_comment?></textarea>
                                             </div>
                                         </div>
 
-                                        <div class="row mb-3">
-                                            <label  class="col-sm-2 col-form-label">Attachments</label>
+                                        <div class="row mb-3 align-items-center">
+                                            <label  class="col-sm-2 col-form-label">Evidence</label>
                                             <div class="col-sm-5">
                                                 <input class="form-control" type="file" name="evidence_{{ $goal->id }}_{{ $flag+1 }}" id="formFile">
+                                                
+                                            </div>
+                                            <div class="col">
+                                                @if(!empty($data->attachment))
+                                                    <a href="{{ asset('storage/' . $data->attachment) }}" download >{{ basename($data->attachment) }}</a>
+                                                @endif
                                             </div>
                                         </div>
 
                                     </div>
                                 </div>
+
+                                
 
                             </div>
                           
@@ -119,14 +127,15 @@
                                 <div class="row project">
                                     <div class="col">
                                         <div class="row mb-3">
-                                            <label  class="col-md-2 col-form-label">Rating</label>
+                                            <label  class="col-md-2 col-form-label">Rating <span class="text-danger">*</span></label>
                                             <div class="col-md-3">
                                                 <select name="rating_{{ $goal->id }}" class="form-select">
                                                     <option value="" selected>Select rating</option>
-                                                    <option value="0" >Not Applicable</option>
+                                                    
                                                     <option value="10" >Achieved</option>
                                                     <option value="5" >Partially Achieved</option>
                                                     <option value="1" >Not Achieved</option>
+                                                    <option value="0" >Not Applicable</option>
                                                 </select>
                                             </div>
                                             <!-- <label  class="col-md-2 col-form-label col-auto-xxl">Project Name</label>
@@ -149,7 +158,7 @@
                                         </div>
 
                                         <div class="row mb-3">
-                                            <label  class="col-sm-2 col-form-label">Attachments</label>
+                                            <label  class="col-sm-2 col-form-label">Evidence</label>
                                             <div class="col-sm-5">
                                                 <input class="form-control" type="file" name="evidence_{{ $goal->id }}" id="formFile">
                                             </div>
@@ -159,6 +168,8 @@
                                 </div>
                             </div>
                         </div>
+
+                        
                     </div>
                 </div>
             <?php 
@@ -168,7 +179,18 @@
         </div>
         @endforeach
 
-
+        <div style="padding-left:45px">
+          <div class="row mt-3 mb-2">
+            <div class="col-md-6">
+              <p class="">Key Contributions</p>
+              <textarea style="height:100px;" name="key_contribution" id="key_contribution" class="form-control"><?=$submittedGeneralData->key_contributions?></textarea>
+            </div>
+            <div class="col-md-6">
+              <p class="">Appraiser Comments</p>
+              <textarea style="height:100px;" name="appraiser_comment" id="appraiser_comment" class="form-control"><?=$submittedGeneralData->suggestions_for_improvement?></textarea>
+            </div>
+          </div>
+        </div>
     </div>
 </div>
 

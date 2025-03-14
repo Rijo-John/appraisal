@@ -12,6 +12,8 @@ use App\Http\Controllers\AttributeQuestionController;
 use App\Http\Controllers\AppraisalFormController;
 use App\Http\Controllers\AppraisalNonTechnicalFormController;
 use App\Http\Controllers\GoalController;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Response;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -48,6 +50,9 @@ Route::get('/auth/azure', [AzureAuthController::class, 'redirectToAzure'])->name
 Route::get('/auth/callback', [AzureAuthController::class, 'handleAzureCallback']);
 
 Route::middleware(['auth:web'])->group(function () {
+
+    
+
     Route::post('/logout', [AzureAuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -95,6 +100,16 @@ Route::middleware(['auth:web'])->group(function () {
         Route::get('/getSyncedAppraisalUsers', [CommonController::class, 'getSyncedAppraisalUsers'])->name('getSyncedAppraisalUsers');
         Route::post('/storeAppraisalUsers', [CommonController::class, 'storeAppraisalUsers'])->name('storeAppraisalUsers');
     });
+
+    Route::get('/download/{filename}', function ($filename) {
+        $filePath = "storage/app/public/uploads/evidence/" . $filename;
+
+        if (!Storage::exists($filePath)) {
+            abort(404, 'File not found');
+        }
+
+        return Storage::download($filePath);
+    })->name('download.file');
 
     
 });

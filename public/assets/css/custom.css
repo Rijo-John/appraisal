@@ -12225,5 +12225,18 @@ h6, .h6 {
     right: 20px;
   }
 }
+table.dataTable thead th, table.dataTable thead td, table.dataTable.no-footer {
+  border-bottom: 1px solid #adb5bd;
+}
+
+table.dataTable {
+  border-collapse: collapse;
+  border-color: #adb5bd;
+  width: 100% !important;
+}
+
+.dataTables_wrapper .dataTables_filter {
+  margin-bottom: 10px;
+}
 
 /*# sourceMappingURL=custom.css.map */

@@ -24,7 +24,7 @@ class AzureAuthController extends Controller
     public function getAppraisalFormData($headsId){
         //dd($headsId);
         $appraisalFormData = DB::table('appraisal_form')
-        ->select('id', 'appraiser_officer_heads_id','appraiser_officer_name','reporting_officer_name')
+        ->select('id', 'appraiser_officer_heads_id','appraiser_officer_name','reporting_officer_name','appraisal_category')
         ->where('employee_heads_id', $headsId)
           ->where('status', 1)
           ->first();
@@ -43,9 +43,16 @@ class AzureAuthController extends Controller
         $user = InternalUser::where('email', $azureUser->getEmail())
                         ->where('status', 'Active')
                         ->first();
+        $userDepartment = $user['department_id'];
+        $nonTechnicalDepartments = explode(',', env('NON_TECHNICAL_DEPARTMENT_IDS', ''));
+
         //dd($user['first_name'].' '. $user['last_name']);
         if ($user) {
-
+            if(in_array($userDepartment, $nonTechnicalDepartments)){
+                session(['technical' => 0]);
+            }else{
+                session(['technical' => 1]);
+            }
             session(['logged_user_heads_id' => $user['heads_id']]);
             session(['logged_user' => $user['first_name'].' '. $user['last_name']]);
             session(['logged_user_designation_id' => $user['designation_id']]);
@@ -54,23 +61,23 @@ class AzureAuthController extends Controller
             $appraiserOfficerHeadsId = ($appraisalFormData && $appraisalFormData->appraiser_officer_heads_id)?$appraisalFormData->appraiser_officer_heads_id:0;
             $appraiserOfficerName = ($appraisalFormData && $appraisalFormData->appraiser_officer_name)?$appraisalFormData->appraiser_officer_name:'';
             $appraisalFormId = ($appraisalFormData && $appraisalFormData->id)?$appraisalFormData->id:0;
+            $appraisalCategory = ($appraisalFormData && $appraisalFormData->appraisal_category)?$appraisalFormData->appraisal_category:0;
 
-            //dd($appraisalFormData);
             session(['appraiser_officer_heads_id' => $appraiserOfficerHeadsId]);
             session(['appraisal_form_id' => $appraisalFormId]);
+            session(['appraisal_category' => $appraisalCategory]);
             session(['current_appraisal_cycle' => $currentAppraisalCycleData->id]);
             session(['appraiserOfficerName' => $appraiserOfficerName]);
             session(['userDepartment' => $user['department_id']]);
-            // If user exists, log them in
-            //Auth::login($user);
+           
             Auth::guard('web')->login($user);
-            //return redirect()->route('dashboard')->with('success', 'Successfully logged in!');
 
-            $nonTechnicalDepartments = array_map('intval', explode(',', env('NON_TECHNICAL_DEPARTMENT_IDS', '')));
-            if (in_array($user['department_id'], $nonTechnicalDepartments)) {
+            if (session('appraisal_category') == 2) {
                 return redirect()->route('myappraisalnontechnical')->with('success', 'Successfully logged in!');
             }
             return redirect()->route('myappraisal')->with('success', 'Successfully logged in!');
+
+            
         } else {
             // If user does not exist, show an error
             return response()->view('errors.unauthorized', ['email' => $azureUser->getEmail()], 403);
