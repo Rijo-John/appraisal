@@ -47,6 +47,213 @@ class AppraisalFormController extends Controller
        // $vigyan_training_hours=number_format($total_hours, 2);
     }
     public function index(Request $request){
+
+        $sessionData = session()->all();
+        $appraisal_category = $sessionData['appraisal_category'];  
+        $appraiserOfficerName = $sessionData['appraiserOfficerName'];
+        $appraisalData = AppraisalCycle::select('appraisal_period')->where('status',1)->first();
+        $user = Auth::user();
+        $userHeadsId = $sessionData['logged_user_heads_id'];
+        $appraisalCycle = $sessionData['current_appraisal_cycle'];
+        $appraisal_form_id = $sessionData['appraisal_form_id'];
+        
+        if($appraisal_form_id == 0)
+        {
+            return view('user_not_in_appraisal');
+        }
+        $selfFinalise = DB::table('appraisal_form')
+        ->where('employee_heads_id', $userHeadsId)
+        ->where('id', $appraisal_form_id)
+        ->where('appraisal_cycle_id', $appraisalCycle)
+        ->value('self_finalise');
+
+
+        //////////////////////////////////DUPLICATE CODE //////////////////////////////////////////////////////////////////////
+        $vigyanCourseDetails = [];
+        //dd($vigyanCourseDetails);
+            $appraisalCycleData =  DB::table('appraisal_cycle')
+                                ->select('appraisal_cycle','appraisal_period_start','appraisal_period_end')
+                                ->where('id', $appraisalCycle)
+                                ->where('status', 1)
+                                ->get();
+            if($appraisalCycleData) {
+                if (!empty($appraisalCycleData) && !empty($appraisalCycleData[0]->appraisal_period_start) &&  !empty($appraisalCycleData[0]->appraisal_period_end) && $user->email!='') {
+                    $appraisalEndDate = $appraisalCycleData[0]->appraisal_period_end;
+                    $baseUrl = env('VIGYAN_API_URL');
+                    $params = [
+                        'wstoken' => env('VIGYAN_API_TOKEN'),
+                        'wsfunction' => env('VIGYAN_API_FUNCTION'),
+                        'moodlewsrestformat' => 'json',
+                        'start_date' => $appraisalCycleData[0]->appraisal_period_start,
+                        'end_date' => $appraisalCycleData[0]->appraisal_period_end,
+                        'email' => "aneesh.ks@thinkpalm.com", //$user->email
+                    ];
+                    $response = Http::withHeaders([
+                        'Content-Type' => 'application/json'
+                    ])->get($baseUrl, $params);
+                    $vigyanData = $response->json(); 
+
+                    $vigyanCourseDetails['courses'] = [];
+                    $vigyanCourseDetails['timeSpent'] = 0;
+                    $vigyanCourseDetails['calculatePercentage'] = 0;
+                    $vigyanCourseDetails['training_name'] = [];
+                    $vigyanCourseDetails['trainingTimeSpent'] = 0;
+                    $vigyanCourseDetails['totalVigyanTimeSpent'] = 0;
+
+                    if(count($vigyanData['vigyan_training_details']) > 0 || count($vigyanData['internal_hours']) > 0 )
+                    {
+                        $vigyanTime = 0;
+                        $trainingTime = 0;
+                        $vigyanCourseDetails['courses'] = [];
+                        $vigyanCourseDetails['timeSpent'] = 0;
+                        $vigyanCourseDetails['calculatePercentage'] = "NA";
+                        $vigyanCourseDetails['training_name'] = [];
+                        $vigyanCourseDetails['trainingTimeSpent'] = 0;
+                        $vigyanCourseDetails['totalVigyanTimeSpent'] = 0;
+                        if(count($vigyanData['vigyan_training_details']) > 0) {
+                            $totalDuration = 0; 
+                            foreach($vigyanData['vigyan_training_details'] as $index => $vigyan)
+                            {
+                                $vigyanCourseDetails['courses'][] = $vigyan['course_name'];
+                                $totalDuration += $vigyan['time_spent']; 
+                            }
+                            $hours = floor($totalDuration / 3600); 
+                            $minutes = floor(($totalDuration % 3600) / 60); 
+                            $vigyanCourseDetails['timeSpent'] = $hours." Hours ".$minutes ." Minutes";
+                            $vigyanTime = $totalDuration;
+                            $total_dedication = $vigyanData['total_dedication'];
+                            $targeted_hours_sec  = $vigyanData['targeted_hours'] * 60 * 60;
+                            
+                        }
+                        // else
+                        // {
+                        //     $vigyanCourseDetails['courses'] = [];
+                        //     $vigyanCourseDetails['timeSpent'] = 0;
+                        //     $vigyanCourseDetails['calculatePercentage'] = 0;
+                        //     $vigyanCourseDetails['training_name'] = [];
+                        //     $vigyanCourseDetails['trainingTimeSpent'] = 0;
+                        //     $vigyanCourseDetails['totalVigyanTimeSpent'] = 0;
+                        // }
+                        if(count($vigyanData['internal_hours']) > 0) {
+                            $totaltrainingDuration = 0; 
+                            foreach($vigyanData['internal_hours'] as $index => $training)
+                            {
+                                $vigyanCourseDetails['training_name'][] = $training['training_name'];
+                                $totaltrainingDuration += $training['time_spent']; 
+                            }
+                            $vigyanCourseDetails['trainingTimeSpent'] = $totaltrainingDuration." Hours";
+                            $trainingTime = $totaltrainingDuration;
+                            $totalVigyanTimeSpentSec = ($totaltrainingDuration*60*60)+$vigyanTime;
+                            $hours = floor($totalVigyanTimeSpentSec / 3600); 
+                            $minutes = floor(($totalVigyanTimeSpentSec % 3600) / 60); 
+                            $vigyanCourseDetails['totalVigyanTimeSpent'] = $hours." Hours ".$minutes ." Minutes";
+                        }
+                        // else
+                        // {
+                        //     $vigyanCourseDetails['courses'] = [];
+                        //     $vigyanCourseDetails['timeSpent'] = 0;
+                        //     $vigyanCourseDetails['calculatePercentage'] = 0;
+                        //     $vigyanCourseDetails['training_name'] = [];
+                        //     $vigyanCourseDetails['trainingTimeSpent'] = 0;
+                        //     $vigyanCourseDetails['totalVigyanTimeSpent'] = 0;
+                        // }
+                        if($total_dedication+$totalVigyanTimeSpentSec > 0 && $targeted_hours_sec >0)
+                        {
+                            $calculatePercentage = (($total_dedication+$totalVigyanTimeSpentSec)/$targeted_hours_sec) * 100;
+                            $vigyanCourseDetails['calculatePercentage'] = round($calculatePercentage,2);
+                        }
+                        
+                    }
+                   
+                } else {
+                    echo 'No valid appraisal period start date found.';
+                    exit();
+                }
+            }
+
+            $currentMonth = Carbon::now()->month;
+            $appraisalMonth = ($currentMonth < 7) ? 1 : 2;
+            $formattedAppraisalEndDate = Carbon::parse($appraisalEndDate)->format('Y-m');
+            $params = [
+                'url' => env('HEADS_CERTIFICATION_URL'),
+                'appraisalMonthType' => (int) $appraisalMonth,
+                'employeeId' => 11, // (int) $user->heads_id,
+                'appraisalMonth' => $formattedAppraisalEndDate //"2025-04",
+            ];
+            $certificationsfromHeads = $this->apiCallToGetCertificationDetailsHeads($params);
+            if (isset($certificationsfromHeads->AppraisalCertListDataResponse) && count($certificationsfromHeads->AppraisalCertListDataResponse) > 0) {
+                // Your logic here
+            }
+            else
+            {
+                $certificationsfromHeads->AppraisalCertListDataResponse = [];
+            }
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        if($appraisal_category == 2)  // by sooraj
+        {
+            
+    
+            // Fetch self_finalise status from the appraisal_form table
+            
+    
+            
+            $employeeData = [
+                'profile_pic' => $user->profile_pic,
+                'name'  => $user->first_name . ' ' . $user->last_name,
+                'emp_code' => $user->emp_code,
+                'designation_name' => $user->designation_name,
+                'date_of_join' => $user->date_of_join,
+                'appraisal_period' => $appraisalData->profile_pic,
+                'appraiserOfficerName' => $appraiserOfficerName
+            ];
+            
+    
+            
+                $user_goals =  DB::table('goals')
+                                ->select('id','goal','employee_heads_id','appraisal_cycle','weightage')
+                                ->where('appraisal_cycle', $appraisalCycle)
+                                ->where('employee_heads_id', $userHeadsId)
+                                ->get();
+    
+                $user_projects = DB::table('project_allocations')
+                                ->select('projects.parats_project_id','projects.project_name')
+                                ->leftJoin('projects', 'projects.parats_project_id', '=', 'project_allocations.parats_project_id')
+                                ->where('project_allocations.heads_id', $userHeadsId)
+                                ->get();
+    
+                $submitted_goal_ratings =  DB::table('employee_goal_ratings')
+                                        ->select('*')
+                                        ->where('appraisal_cycle', $appraisalCycle)
+                                        ->where('employee_heads_id', $userHeadsId)
+                                        ->get();
+                $submittedGeneralData = DB::table('general_data_by_appraisee')
+                            ->where('appraisal_cycle', $appraisalCycle)
+                            ->where('employee_heads_id', $userHeadsId)
+                            ->where('appraisal_form_id', $appraisal_form_id)
+                            ->first();
+                $goalWiseData = [];
+                foreach ($submitted_goal_ratings as $item) {
+                    $goalId = $item->goal_id;
+                    if (!isset($goalWiseData[$goalId])) {
+                        $goalWiseData[$goalId] = [];
+                    }
+                    $goalWiseData[$goalId][] = $item;
+                }
+          // dd($vigyanCourseDetails);
+            return view('my_appraisal', [
+                'employeeData' => $employeeData,
+                'user_goals' => $user_goals,
+                'user_projects' => $user_projects,
+                'goalWiseData' => $goalWiseData,
+                'selfFinalise' => $selfFinalise,
+                'submittedGeneralData'=>$submittedGeneralData,
+                'vigyanCourseDetails' => $vigyanCourseDetails,
+                'certificationsfromHeads' => $certificationsfromHeads,
+            ]);
+        }
+        else if($appraisal_category == 1)
+        {
+         
         $sessionData = session()->all();
         $appraiserOfficerName = $sessionData['appraiserOfficerName'];
         $appraisalData = AppraisalCycle::select('appraisal_period')->where('status',1)->first();
@@ -235,22 +442,22 @@ class AppraisalFormController extends Controller
                             ->where('employee_heads_id', $userHeadsId)
                             ->get();
 
-            // $user_projects = DB::table('project_allocations')
-            //                 ->select('projects.parats_project_id','projects.project_name')
-            //                 ->leftJoin('projects', 'projects.parats_project_id', '=', 'project_allocations.parats_project_id')
-            //                 ->where('project_allocations.heads_id', $userHeadsId)
-            //                 ->get();
-            $user_projects = DB::table('project_allocations pa')
-                            ->select('p.project_name,p.id,pa.parats_project_id,pa.allocation_from,pa.allocation_to')
-                            ->leftJoin('projects p', 'pa.parats_project_id', '=', 'p.parats_project_id')
-                            ->where('pa.heads_id', $userHeadsId)
-                            ->where('p.id', '>', 0)
-                            ->where(function ($query) {
-                                $query->whereBetween('pa.allocation_from', ['2024-04-01', '2025-03-01'])
-                                      ->orWhereBetween('pa.allocation_to', ['2024-04-01', '2025-03-01']);
-                            })
-                            ->groupBy('p.project_code')
+            $user_projects = DB::table('project_allocations')
+                            ->select('projects.parats_project_id','projects.project_name')
+                            ->leftJoin('projects', 'projects.parats_project_id', '=', 'project_allocations.parats_project_id')
+                            ->where('project_allocations.heads_id', $userHeadsId)
                             ->get();
+            // $user_projects = DB::table('project_allocations pa')
+            //                 ->select('p.project_name,p.id,pa.parats_project_id,pa.allocation_from,pa.allocation_to')
+            //                 ->leftJoin('projects p', 'pa.parats_project_id', '=', 'p.parats_project_id')
+            //                 ->where('pa.heads_id', $userHeadsId)
+            //                 ->where('p.id', '>', 0)
+            //                 ->where(function ($query) {
+            //                     $query->whereBetween('pa.allocation_from', ['2024-04-01', '2025-03-01'])
+            //                           ->orWhereBetween('pa.allocation_to', ['2024-04-01', '2025-03-01']);
+            //                 })
+            //                 ->groupBy('p.project_code')
+            //                 ->get();
            
             $submitted_goal_ratings =  DB::table('employee_goal_ratings')
                                     ->select('*')
@@ -307,10 +514,14 @@ class AppraisalFormController extends Controller
             'general_data' => $submitted_general_data,
             'vigyanCourseDetails' => $vigyanCourseDetails,
             'certificationsfromHeads' => $certificationsfromHeads,
+            'selfFinalise' => $selfFinalise,
         ]);
+        }
     }
     public function submitEmpGoals(Request $request)
     {
+        if($appraisal_category == 1)
+        {
         //echo '<pre>'; print_r($request->input()); die();
         $sessionData = session()->all();
         $appraiserOfficerName = $sessionData['appraiserOfficerName'];
@@ -460,6 +671,146 @@ class AppraisalFormController extends Controller
         /**
         * Code Ends Here
         */
+
+        }
+        else if($appraisal_category == 2)
+        {
+            $appraiserOfficerName = $sessionData['appraiserOfficerName'];
+            $userHeadsId = $sessionData['logged_user_heads_id'];
+            $appraisalCycle = $sessionData['current_appraisal_cycle'];
+            $appraisalFormId = session('appraisal_form_id');
+    
+            $isFinalised = DB::table('appraisal_form')
+                    ->where('employee_heads_id', $userHeadsId)
+                    ->where('id', $appraisalFormId)
+                    ->where('appraisal_cycle_id', $appraisalCycle)
+                    ->value('self_finalise');
+            if ($isFinalised == 1) {
+                return redirect()->back()->withErrors(['error' => 'You cannot submit goals as they have already been finalised.']);
+            }
+    
+            $submittedGoalRatings = DB::table('employee_goal_ratings')
+                ->where('appraisal_cycle', $appraisalCycle)
+            ->where('employee_heads_id', $userHeadsId)
+            ->exists();
+    
+    
+            if ($submittedGoalRatings) {
+                DB::table('employee_goal_ratings')
+                    ->where('appraisal_cycle', $appraisalCycle)
+                    ->where('employee_heads_id', $userHeadsId)
+                    ->delete();
+    
+            }
+    
+            $submittedGeneralData = DB::table('general_data_by_appraisee')
+                ->where('appraisal_cycle', $appraisalCycle)
+                ->where('employee_heads_id', $userHeadsId)
+                ->where('appraisal_form_id', $appraisalFormId)
+                ->exists();
+            if($submittedGeneralData){
+                DB::table('general_data_by_appraisee')
+                    ->where('appraisal_cycle', $appraisalCycle)
+                    ->where('employee_heads_id', $userHeadsId)
+                    ->where('appraisal_form_id', $appraisalFormId)
+                    ->delete();
+            }
+    
+            $user_goals = DB::table('goals')
+                ->select('id', 'goal', 'employee_heads_id', 'appraisal_cycle', 'weightage')
+                ->where('appraisal_cycle', $appraisalCycle)
+                ->where('employee_heads_id', $userHeadsId)
+                ->get();
+    
+            
+            $validationRules = [];
+            $customMessages = [];
+    
+            // **Check if the user clicked "Finalise"**
+            if ($request->input('action') === 'finalise') {
+                foreach ($user_goals as $goals) {
+                    $ratingValue = 'rating_' . $goals->id;
+                    $validationRules[$ratingValue] = 'required|in:0,1,5,10'; 
+    
+                    $customMessages["$ratingValue.required"] = "Rating is required for  goals.";
+                    $customMessages["$ratingValue.in"] = "Invalid rating selected for goal.";
+                }
+            }
+    
+            foreach ($user_goals as $goals) {
+                $fileInputName = 'evidence_' . $goals->id;
+                $validationRules[$fileInputName] = 'nullable|file|mimes:pdf,jpg,png|max:2048';
+            }
+    
+            $customMessages = [
+                'evidence_*.mimes' => "The evidence file must be a PDF, JPG, or PNG.",
+                'evidence_*.max' => "The evidence file must not be larger than 2MB."
+            ];
+    
+            $validator = Validator::make($request->all(), $validationRules, $customMessages);
+    
+            if ($validator->fails()) {
+                $errors = $validator->errors();
+    
+                // Merge duplicate messages for 'evidence' files
+                if ($errors->hasAny(array_keys($validationRules))) {
+                    $uniqueMessages = collect($errors->all())->unique()->values()->toArray();
+                    return redirect()->back()->withErrors($uniqueMessages)->withInput();
+                }
+    
+                return redirect()->back()->withErrors($errors)->withInput();
+            }
+    
+            //$request->validate($validationRules, $customMessages);
+            $insertData = [];
+            foreach ($user_goals as $goals) {
+                $ratingValue = 'rating_' . $goals->id;
+                $empremarks = 'remarks_' . $goals->id;
+                $fileInputName = 'evidence_' . $goals->id;
+                $attachmentPath = null;
+    
+                if ($request->hasFile($fileInputName)) {
+                    $file = $request->file($fileInputName);
+                    $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                    $cleanFilename = preg_replace('/[^A-Za-z0-9_\-]/', '_', $originalFilename);
+                    $extension = $file->getClientOriginalExtension();
+                    $timestamp = time();
+                    $newFilename = $timestamp . '_' . $goals->id . '_' . $cleanFilename . '.' . $extension;
+                    $attachmentPath = $file->storeAs('uploads/evidence', $newFilename, 'public');
+                }
+    
+                
+    
+                DB::table('employee_goal_ratings')->insert([
+                    'appraisal_cycle' => $appraisalCycle,
+                    'employee_heads_id' => $userHeadsId,
+                    'goal_id' => $goals->id,
+                    'parats_project_id' => 0,
+                    'rating' => $request->input($ratingValue),
+                    'employee_comment' => $request->input($empremarks),
+                    'appraisal_form_id' => $appraisalFormId,
+                    'attachment' => $attachmentPath
+                ]);
+    
+                
+            }
+    
+            DB::table('general_data_by_appraisee')->insert([
+                'appraisal_form_id' => $appraisalFormId,
+                'appraisal_cycle' => $appraisalCycle,
+                'employee_heads_id' => $userHeadsId,
+                'key_contributions' => $request->input('key_contribution'),
+                'suggestions_for_improvement' => $request->input('appraiser_comment')
+            ]);
+    
+            if ($request->input('action') === 'finalise') {
+                DB::table('appraisal_form')
+                    ->where('employee_heads_id', $userHeadsId)
+                    ->where('id', $appraisalFormId)
+                    ->where('appraisal_cycle_id', $appraisalCycle)
+                    ->update(['self_finalise' => 1]);
+            }
+        }
         //return redirect()->route('myappraisal');
 
     }

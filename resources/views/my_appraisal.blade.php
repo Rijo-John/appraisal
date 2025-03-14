@@ -28,11 +28,9 @@
                 </div>
             @endif
 
-            @if(session('appraisal_category') == 2)
-            <form action="{{ route('employeeGoalSubmitNonTechnical') }}" method="POST" enctype="multipart/form-data">
-            @else
+           
             <form action="{{ route('employeeGoalSubmit') }}" method="POST" enctype="multipart/form-data">
-            @endif
+           
             @csrf
             <div class="row align-items-center mb-3">
               <div class="col">

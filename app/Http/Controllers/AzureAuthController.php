@@ -72,9 +72,9 @@ class AzureAuthController extends Controller
            
             Auth::guard('web')->login($user);
 
-            if (session('appraisal_category') == 2) {
-                return redirect()->route('myappraisalnontechnical')->with('success', 'Successfully logged in!');
-            }
+            // if (session('appraisal_category') == 2) {
+            //     return redirect()->route('myappraisalnontechnical')->with('success', 'Successfully logged in!');
+            // }
             return redirect()->route('myappraisal')->with('success', 'Successfully logged in!');
 
             
