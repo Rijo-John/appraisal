@@ -6,7 +6,8 @@
             <h3 class="heading-color mb-0">Appraisal Data</h3>
         </div>
         <div class="col-auto">
-            <button id="syncButton" class="btn btn-primary " >Sync Appraisal Users</button>
+
+            <button id="syncButton" class="btn btn-primary " >Sync Appraisal Users<div class="loader ms-2" style="display: none;"></div></button>
         </div>
     </div>
     
@@ -14,21 +15,13 @@
     <div class="card-body">
         <div class="row">
             <div class="col">
+
+                
                 
                     
-
-                    
+                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-                    <!-- jQuery and DataTables JS -->
-                    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
-                    <!-- <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script> -->
-                    <!-- Bootstrap JS -->
-                    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> -->
-
-
                     
-                    
-                    <!-- Success Message -->
                     <div id="success-message" class="alert alert-success d-none"></div>
 
              
@@ -116,16 +109,34 @@
                         });
 
                         $('#syncButton').click(function() {
+                            let loader = $(this).find('.loader');
+                            loader.show();
                             $.ajax({
                                 url: "{{ route('syncappraisalusers') }}",
                                 type: "POST",
                                 data: {_token: "{{ csrf_token() }}"},
                                 success: function(response) {
-                                    alert("Data synced successfully!");
-                                    fetchSyncedUsers(); // Fetch synced users after syncing
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Success!',
+                                        text: 'Data synced successfully!',
+                                        confirmButtonColor: '#3085d6',
+                                        confirmButtonText: 'OK'
+                                    });
+                                    fetchSyncedUsers();
                                 },
                                 error: function(xhr) {
-                                    alert("Error syncing data.");
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Oops!',
+                                        text: 'Error syncing data. Please try again.',
+                                        confirmButtonColor: '#d33',
+                                        confirmButtonText: 'Close'
+                                    });
+                                },
+                                complete: function() {
+                                    // Hide loader when request completes (success or error)
+                                    loader.hide();
                                 }
                             });
                         });
