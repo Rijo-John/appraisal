@@ -58,9 +58,9 @@
                 @endif
               </div>
              
-              <div class="tab-pane fade" id="employee-tasks-pane" role="tabpanel" aria-labelledby="employee-tasks-tab" tabindex="0">
-                @include('appraisal_training')
-              </div>
+              <!-- <div class="tab-pane fade" id="employee-tasks-pane" role="tabpanel" aria-labelledby="employee-tasks-tab" tabindex="0">
+                icnclude('appraisal_training')
+              </div> -->
 
               <div class="tab-pane fade" id="attribute-review-pane" role="tabpanel" aria-labelledby="attribute-review-tab" tabindex="0">
                 @include('appraisal_attribute_review')

@@ -1,3 +1,8 @@
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+ 
 <div class="card">
   <div class="card-body card-body-scrollable-content">
     <div class="row align-items-center">
@@ -14,6 +19,7 @@
     @foreach($user_projects as $projectIndex => $project)
    
       <!------ project div starts here   ----------->
+      <input type="hidden" id="project_name_{{ $project->parats_project_id }}" value="<?=$project->project_name?>" />
       <div class="row">
         <div class="col">
           <div class="row align-items-center mb-3">
@@ -50,7 +56,8 @@
                         <td width="50" class="text-center">{{ $index+1 }}</td>
                         <td>{{ $goal->goal }}</td>
                         <td width="150">
-                            <select name="rating_{{ $project->parats_project_id }}_{{ $goal->id }}" class="form-select">
+                          
+                            <select name="rating_{{ $project->parats_project_id }}_{{ $goal->id }}" class="form-select project_goal_rating" data-projectId="{{ $project->parats_project_id }}">
                                 <!-- <option value="" selected>Select rating</option>
                                 <option value="10" >Achieved</option>
                                 <option value="5" >Partially Achieved</option>
@@ -79,10 +86,7 @@
           <div class="row mb-4">
             <div class="col">
               <p class="mb-1">Task Details</p>
-              <textarea   name="taskdetails{{ $project->parats_project_id }}" class="form-control" placeholder="Task Details" style="height: 83px;">
-              @if (isset($project_extra[$projectId][0]->task_details))
-                  {{ $project_extra[$projectId][0]->task_details }}
-              @endif
+              <textarea   name="taskdetails{{ $project->parats_project_id }}" class="form-control" placeholder="Task Details" style="height: 83px;">@if (isset($project_extra[$projectId][0]->task_details)) {{ $project_extra[$projectId][0]->task_details }} @endif
             </textarea>
             </div>
           </div>
@@ -177,3 +181,51 @@
     </div>
 </div>
 </div>
+
+
+<script>
+ $(document).ready(function() {
+    $("form").submit(function(e) {
+        let isValid = true;
+        let firstErrorElement = null;
+        let missingProjects = [];
+
+        // Remove previous error messages
+        $(".rating-error").remove();
+        $(".project_goal_rating").removeClass("is-invalid");
+
+        // Loop through all rating select elements
+        $(".project_goal_rating").each(function() {
+            let projectId = $(this).data("projectid"); // Get project ID from data attribute
+            
+
+            if ($(this).val() === "") {
+                isValid = false;
+                $(this).addClass("is-invalid"); // Highlight error
+                $(this).after('<div class="text-danger rating-error">Please select a rating</div>');
+
+                var projectName = $('#project_name_'+projectId).val();
+
+               // toastr.error(`Please provide a rating for all the goals in the ${projectName} Project.`);
+                //return false;
+              
+            }
+        });
+
+      
+
+        // Prevent form submission if validation fails
+       // if (!isValid) {
+          // e.preventDefault();
+       // }
+    });
+
+    // Remove error message when selecting a rating
+    $(document).on("change", ".project_goal_rating", function() {
+        $(this).removeClass("is-invalid");
+        $(this).next(".rating-error").remove();
+    });
+});
+
+
+  </script>
