@@ -10,6 +10,7 @@ use App\Models\AppraisalCycle;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
 
 class AppraisalFormController extends Controller
 {
@@ -220,7 +221,8 @@ class AppraisalFormController extends Controller
                         ->where('appraisal_cycle', $appraisalCycle)
                         ->where('employee_heads_id', $userHeadsId)
                         ->where('appraisal_form_id', $appraisal_form_id)
-                        ->first();
+                        ->first() ?? (object) ['key_contributions' => '', 'suggestions_for_improvement' => ''];
+            //dd($submittedGeneralData);
             $goalWiseData = [];
             foreach ($submitted_goal_ratings as $item) {
                 $goalId = $item->goal_id;
@@ -487,39 +489,56 @@ class AppraisalFormController extends Controller
             
             $validationRules = [];
             $customMessages = [];
+            $goalIndex = 1;
     
             // **Check if the user clicked "Finalise"**
             if ($request->input('action') === 'finalise') {
                 foreach ($user_goals as $goals) {
                     $ratingValue = 'rating_' . $goals->id;
-                    $validationRules[$ratingValue] = 'required|in:0,1,5,10'; 
-    
-                    $customMessages["$ratingValue.required"] = "Rating is required for  goals.";
-                    $customMessages["$ratingValue.in"] = "Invalid rating selected for goal.";
+                    $validationRules[$ratingValue] = 'required|in:0,1,5,10';
+
+                    // Custom error message with index
+                    $customMessages["$ratingValue.required"] = "Rating is required for Goal #$goalIndex.";
+                    $customMessages["$ratingValue.in"] = "Invalid rating selected for Goal #$goalIndex.";
+
+                    $goalIndex++; // Increment index
                 }
             }
     
             foreach ($user_goals as $goals) {
                 $fileInputName = 'evidence_' . $goals->id;
                 $validationRules[$fileInputName] = 'nullable|file|mimes:pdf,jpg,png|max:2048';
+
+                $customMessages["$fileInputName.mimes"] = "The evidence file for goal ID {$goals->id} must be a PDF, JPG, or PNG.";
+                $customMessages["$fileInputName.max"] = "The evidence file for goal ID {$goals->id} must not be larger than 2MB.";
             }
     
-            $customMessages = [
+            /*$customMessages = [
                 'evidence_*.mimes' => "The evidence file must be a PDF, JPG, or PNG.",
                 'evidence_*.max' => "The evidence file must not be larger than 2MB."
-            ];
+            ];*/
     
             $validator = Validator::make($request->all(), $validationRules, $customMessages);
     
             if ($validator->fails()) {
                 $errors = $validator->errors();
-    
-                // Merge duplicate messages for 'evidence' files
-                if ($errors->hasAny(array_keys($validationRules))) {
-                    $uniqueMessages = collect($errors->all())->unique()->values()->toArray();
-                    return redirect()->back()->withErrors($uniqueMessages)->withInput();
+                
+                // Collect missing rating indexes
+                $missingRatings = [];
+                $goalIndex = 1; // Reset index
+                foreach ($user_goals as $goals) {
+                    $ratingValue = 'rating_' . $goals->id;
+                    if ($errors->has($ratingValue)) {
+                        $missingRatings[] = "#$goalIndex"; // Collect index of missing goal
+                    }
+                    $goalIndex++;
                 }
-    
+
+                if (!empty($missingRatings)) {
+                    $missingMessage = "Please select ratings for the following goals: " . implode(', ', $missingRatings);
+                    return redirect()->back()->withErrors(['error' => $missingMessage])->withInput();
+                }
+
                 return redirect()->back()->withErrors($errors)->withInput();
             }
     
