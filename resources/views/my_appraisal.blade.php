@@ -37,8 +37,8 @@
                 <h3 class="heading-color mb-0">My Appraisal</h3>
               </div>
               <div class="col-auto">
-                <button type="submit" name="action" value="draft"class="btn btn-success mx-2 {{ $selfFinalise == 1 ? 'disabled' : '' }}" >Save As Draft</button>
-                <button type="submit" name="action" value="finalise" class="btn btn-primary {{ $selfFinalise == 1 ? 'disabled' : '' }}">Finalise</button>
+                <button type="submit" name="action" id="appraisal_draft" value="draft"class="btn btn-success mx-2 {{ $selfFinalise == 1 ? 'disabled' : '' }}" >Save As Draft</button>
+                <button type="submit" name="action"  id="appraisal_finalise" value="finalise" class="btn btn-primary {{ $selfFinalise == 1 ? 'disabled' : '' }}">Finalise</button>
               </div>
             </div>
            
@@ -58,9 +58,9 @@
                 @endif
               </div>
              
-              <!-- <div class="tab-pane fade" id="employee-tasks-pane" role="tabpanel" aria-labelledby="employee-tasks-tab" tabindex="0">
-                icnclude('appraisal_training')
-              </div> -->
+              <div class="tab-pane fade" id="employee-tasks-pane" role="tabpanel" aria-labelledby="employee-tasks-tab" tabindex="0">
+                @include('appraisal_training')
+              </div>
 
               <div class="tab-pane fade" id="attribute-review-pane" role="tabpanel" aria-labelledby="attribute-review-tab" tabindex="0">
                 @include('appraisal_attribute_review')
