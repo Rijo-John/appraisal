@@ -37,8 +37,9 @@
                 <h3 class="heading-color mb-0">My Appraisal</h3>
               </div>
               <div class="col-auto">
-                <button type="submit" name="action" id="appraisal_draft" value="draft"class="btn btn-success mx-2 {{ $selfFinalise == 1 ? 'disabled' : '' }}" >Save As Draft</button>
-                <button type="submit" name="action"  id="appraisal_finalise" value="finalise" class="btn btn-primary {{ $selfFinalise == 1 ? 'disabled' : '' }}">Finalise</button>
+                <button type="submit" name="action" value="draft" class="btn btn-success mx-2 {{ $selfFinalise == 1 ? 'disabled' : '' }}" >Save As Draft</button>
+                <button type="submit" name="action" value="finalise" id="finaliseButton" class="btn btn-primary {{ $selfFinalise == 1 ? 'disabled' : '' }}">Finalise</button>
+
               </div>
             </div>
            
@@ -87,6 +88,7 @@
                     }
                 }, 3000); // 3 seconds timeout for success message
             });
+            
         </script>
 
   @endsection

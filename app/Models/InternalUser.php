@@ -39,7 +39,8 @@ class InternalUser extends Model implements Authenticatable
                     'reporting_officer_id' => $each_employee['ReportingOfficerXId'],
                     'reporting_officer_name' => $each_employee['ReportingOfficer'],
                     'designation_id' => $each_employee['DesignationId'], 
-                    'designation_name' => $each_employee['DesignationName'],                                
+                    'designation_name' => $each_employee['DesignationName'],
+                    'department_id' => $each_employee['DepartmentId'],                                 
                 );
 
                 
@@ -62,6 +63,7 @@ class InternalUser extends Model implements Authenticatable
                     'reporting_officer_name' => $each_employee['ReportingOfficer'],
                     'designation_id' => $each_employee['DesignationId'], 
                     'designation_name' => $each_employee['DesignationName'],
+                    'department_id' => $each_employee['DepartmentId'],
 
                 );
 
