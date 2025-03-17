@@ -1,5 +1,7 @@
 @extends('layouts.app')
 @section('content')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <main class="col  ms-sm-auto  content-wrapper-no-left-tab">
     <div class="row align-items-center mb-3">
         <div class="col">
@@ -116,23 +118,12 @@
                                 type: "POST",
                                 data: {_token: "{{ csrf_token() }}"},
                                 success: function(response) {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Success!',
-                                        text: 'Data synced successfully!',
-                                        confirmButtonColor: '#3085d6',
-                                        confirmButtonText: 'OK'
-                                    });
+                                    toastr.success("Data Synced Successfully");
                                     fetchSyncedUsers();
                                 },
                                 error: function(xhr) {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Oops!',
-                                        text: 'Error syncing data. Please try again.',
-                                        confirmButtonColor: '#d33',
-                                        confirmButtonText: 'Close'
-                                    });
+                                    toastr.error("Error syncing data. Please try again.");
+                                    
                                 },
                                 complete: function() {
                                     // Hide loader when request completes (success or error)
