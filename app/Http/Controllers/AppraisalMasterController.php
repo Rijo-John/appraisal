@@ -27,14 +27,24 @@ class AppraisalMasterController extends Controller
                 DB::raw("CONCAT(rep.first_name, ' ', rep.last_name) as reporting_officer_name"),
                 DB::raw("CONCAT(app.first_name, ' ', app.last_name) as appraiser_officer_name")
             )
-            ->join('internal_users as emp', 'appraisal_form.employee_heads_id', '=', 'emp.heads_id')
+            
+            ->join('internal_users as emp', function ($join) {
+                $join->on('appraisal_form.employee_heads_id', '=', 'emp.heads_id')
+                     ->where('emp.emp_type','!=', 'Contract'); // Add additional condition here
+            })
             ->join('designations', 'appraisal_form.designation_id', '=', 'designations.id')
-            ->leftJoin('internal_users as rep', 'appraisal_form.reporting_officer_heads_id', '=', 'rep.heads_id')
-            ->leftJoin('internal_users as app', 'appraisal_form.appraiser_officer_heads_id', '=', 'app.heads_id')
+            ->leftJoin('internal_users as rep', function ($join) {
+                $join->on('appraisal_form.reporting_officer_heads_id', '=', 'rep.heads_id')
+                     ->where('rep.emp_type','!=', 'Contract'); 
+            })
+            ->leftJoin('internal_users as app', function ($join) {
+                $join->on('appraisal_form.appraiser_officer_heads_id', '=', 'app.heads_id')
+                     ->where('app.emp_type', '!=', 'Contract'); 
+            })
             ->where('appraisal_form.status', 1)
             ->where('appraisal_cycle_id', $currentAppraisalCycleData->id);
             
-            //dd($appraisals);
+           
 
         return DataTables::of($appraisals)->make(true);
     }
