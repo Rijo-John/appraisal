@@ -74,27 +74,32 @@ Route::middleware(['auth:web'])->group(function () {
         Route::get('/assign-admin/users', [AdminController::class, 'getUsers'])->name('assign.admin.users'); // New AJAX route
         Route::post('/assign-admin', [AdminController::class, 'assignAdmin'])->name('assign.admin.submit');
 
-        /*Route::get('/appraisal-master', function () {
-            return view('appraisal_master'); 
-        })->name('appraisal.view');
-
-        Route::get('/getappraisaldata', [AppraisalMasterController::class, 'getAppraisalData'])->name('appraisaldata');
-        Route::match(['get', 'post'], '/syncappraisalusers', [CommonController::class, 'syncAppraisalUsers'])->name('syncappraisalusers');
-
-        Route::get('/getSyncedAppraisalUsers', [CommonController::class, 'getSyncedAppraisalUsers'])->name('getSyncedAppraisalUsers');
-        Route::post('/storeAppraisalUsers', [CommonController::class, 'storeAppraisalUsers'])->name('storeAppraisalUsers');*/
-
-
+        
 
     });
 
 
     Route::middleware(['admin_or_superadmin'])->group(function () {
-        Route::get('/appraisal-master', function () {
+        /*Route::get('/appraisal-master', function () {
             return view('appraisal_master'); 
-        })->name('appraisal.view');
+        })->name('appraisal.view');*/
 
         Route::get('/getappraisaldata', [AppraisalMasterController::class, 'getAppraisalData'])->name('appraisaldata');
+        Route::get('/filter-appraisals', [AppraisalMasterController::class, 'filterAppraisalsByCycle'])->name('filterAppraisalsByCycle');
+        Route::get('/export-appraisals', [AppraisalMasterController::class, 'exportAppraisalsToExcel'])->name('exportAppraisalsToExcel');
+
+        Route::delete('/delete-appraisal/{id}', [AppraisalMasterController::class, 'deleteAppraisal'])->name('deleteAppraisal');
+
+        Route::get('/edit-appraisal/{id}', [AppraisalMasterController::class, 'edit'])->name('edit-appraisal');
+        Route::post('/update-appraisal/{id}', [AppraisalMasterController::class, 'update'])->name('update-appraisal');
+        Route::post('/getappraisaluserscontent', [AppraisalMasterController::class, 'getAppraisalUsersContent'])->name('getappraisaluserscontent');
+        Route::post('/send-appraisal-emails', [AppraisalMasterController::class, 'sendAppraisalEmails'])->name('sendAppraisalEmails');
+
+
+
+
+
+
         Route::match(['get', 'post'], '/syncappraisalusers', [CommonController::class, 'syncAppraisalUsers'])->name('syncappraisalusers');
 
         Route::get('/getSyncedAppraisalUsers', [CommonController::class, 'getSyncedAppraisalUsers'])->name('getSyncedAppraisalUsers');

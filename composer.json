@@ -11,6 +11,7 @@
         "laravel/sanctum": "^3.3",
         "laravel/socialite": "^5.18",
         "laravel/tinker": "^2.8",
+        "maatwebsite/excel": "^3.1",
         "socialiteproviders/microsoft": "^4.6",
         "socialiteproviders/microsoft-graph": "^4.1",
         "yajra/laravel-datatables-oracle": "^10.11"
