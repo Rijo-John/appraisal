@@ -72,9 +72,9 @@
                                             <i class="bi bi-trash  mx-1"></i>
                                         </a>
                                         
-                                        <a href="{{ route('edit-appraisal', $appraisal->id) }}" class="action-icon">
+                                        <!-- <a href="{{ route('edit-appraisal', $appraisal->id) }}" class="action-icon">
                                             <i class="bi bi-pencil"></i>
-                                        </a>
+                                        </a> -->
 
 
                                     </td>
@@ -106,7 +106,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" id="sendEmails">Send Emails</button>
+        <button type="button" class="btn btn-primary" id="sendEmails">Send Emails<div class="loader ms-2" style="display: none;"></div></button>
       </div>
 
 
@@ -212,6 +212,8 @@
                         });
 
                         $("#sendEmails").click(function () {
+                            let loader = $(this).find('.loader');
+                            loader.show();
                             let users = [];
                             $("#exampleModal .modal-body tbody tr").each(function () {
                                 let fullName = $(this).find("td:nth-child(1)").text();
@@ -245,6 +247,11 @@
                                 error: function (xhr, status, error) {
                                     console.error("Error:", error);
                                     //alert("Failed to send emails.");
+                                },
+                                complete: function() {
+                                    // Hide loader when request completes (success or error)
+                                    loader.hide();
+                                    $("#exampleModal").modal('hide');
                                 }
                             })
                         })
