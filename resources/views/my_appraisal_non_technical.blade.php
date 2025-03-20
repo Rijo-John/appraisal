@@ -90,6 +90,11 @@
                                                 @endif
                                             </div>
                                         </div>
+                                        <div class="row">
+                                            <div class="col offset-sm-2 text-danger">
+                                                (Max file size 2MB, Allowed file types are  pdf,png,jpg)
+                                            </div>
+                                        </div>
 
                                     </div>
                                 </div>
@@ -162,6 +167,11 @@
                                             <label  class="col-sm-2 col-form-label">Evidence</label>
                                             <div class="col-sm-5">
                                                 <input class="form-control" type="file" name="evidence_{{ $goal->id }}" id="formFile">
+                                            </div>
+                                            <div class="row">
+                                                <div class="col offset-sm-2 text-danger">
+                                                    (Max file size 2MB, Allowed file types are  pdf,png,jpg)
+                                                </div>
                                             </div>
                                         </div>
 

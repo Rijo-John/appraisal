@@ -200,7 +200,7 @@ class AppraisalFormController extends Controller
         /**
         * Code Ends Here
         */
-
+        //dd($appraisal_category);
         if($appraisal_category == 2)  // by sooraj
         {
             $user_goals =  DB::table('goals')
