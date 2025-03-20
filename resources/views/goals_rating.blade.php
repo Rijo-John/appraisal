@@ -1,8 +1,4 @@
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
- 
 <div class="card">
   <div class="card-body card-body-scrollable-content">
     <div class="row align-items-center">
@@ -47,7 +43,6 @@
                 <tbody>
                   @foreach($user_goals as $index => $goal)   
                   @php
-                      //echo '<pre>'; print_r($projectWiseData); die();
                       $projectId = $project->parats_project_id ?? 0;
                       $goalKey = $goal->id ?? 0;
                       $ratingExists = isset($projectWiseData[$projectId][$goalKey][0]->rating) && ($projectWiseData[$projectId][$goalKey][0]->rating!='');
@@ -71,6 +66,33 @@
                         <td width="350">
                             <textarea name="remarks_{{ $project->parats_project_id }}_{{ $goal->id }}" id="" class="form-control" placeholder="comments" style="height: 83px;"><?=$existingComment?></textarea>
                             <input class="form-control" type="file" name="evidence_{{ $project->parats_project_id }}_{{ $goal->id }}" style=" margin-top: 15px;">
+                            
+                            <div class="col">
+                            @php
+                                $attachment = !empty($projectWiseData[$projectId][$goalKey][0]->attachment) ? $projectWiseData[$projectId][$goalKey][0]->attachment : '';
+                            @endphp
+                              <input type="hidden"  id="attachment_{{ $project->parats_project_id }}_{{ $goal->id }}" name="attachment_{{ $project->parats_project_id }}_{{ $goal->id }}" value="{{ $attachment }}" >
+                              @if ($attachment !='')
+                              <div class="d-flex align-items-center" id="evidencediv_{{ $project->parats_project_id }}_{{ $goal->id }}">
+                                <a style="font-size:10px;" href="{{ route('file.download', ['filename' => basename($projectWiseData[$projectId][$goalKey][0]->attachment)]) }}" >{{ basename($projectWiseData[$projectId][$goalKey][0]->attachment) }}
+                                </a>
+                                <div>
+                                  <!-- <i class="bi bi-x ms-1" title="Delete" style="font-size: 17px;cursor: pointer;"></i> -->
+                                  @if ($selfFinalise == 0)
+                                    <i class="bi bi-x ms-1  delete-attachment" data-bs-toggle="modal" 
+                                      data-bs-target="#deleteAttachmentModal"
+                                      data-project-id="{{ $projectId }}"
+                                      data-goal-id="{{ $goalKey }}"
+                                      data-attachment="{{ $projectWiseData[$projectId][$goalKey][0]->attachment }}"
+                                      data-goal-rating-id="{{ $projectWiseData[$projectId][$goalKey][0]->id }}"
+                                      title="Delete" 
+                                      style="font-size: 17px; cursor: pointer;">
+                                    </i>
+                                  @endif
+                                </div>
+                              </div>
+                              @endif
+                          </div>
                         </td>
                     </tr>
                   @endforeach
@@ -193,10 +215,76 @@
         <textarea name="suggestions_for_improvement"  class="form-control" style="height: 83px;"><?=$suggestionsimprovemnts?></textarea>
       </div>
     </div>
+
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteAttachmentModal" tabindex="-1" aria-labelledby="deleteAttachmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteAttachmentModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this evidence?<br>
+                    Once deleted, the file will be permanently removed and cannot be recovered.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete"><div class="d-flex align-items-center">Delete <div class="loader ms-2 delete-loader" style="display:none;"></div></div></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Delete Confirmation Modal -->
+
 </div>
 </div>
 
+<script>
+    $(document).ready(function () {
+        let attachmentToDelete = "";
+        let projectId = "";
+        let goalId = "";
+        let goalRatingId = "";
 
+        $(".delete-attachment").click(function () {
+            attachmentToDelete = $(this).data("attachment");
+            projectId = $(this).data("project-id");
+            goalId = $(this).data("goal-id");
+            goalRatingId = $(this).data("goal-rating-id");
+        });
+
+        $("#confirmDelete").click(function () {
+            $("#confirmDelete").prop("disabled", true);
+            $(".delete-loader").show();
+            $.ajax({
+                url: "{{ route('file.delete') }}",
+                type: "POST",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    attachment: attachmentToDelete,
+                    project_id: projectId,
+                    goal_id: goalId,
+                    goal_rating_id: goalRatingId
+                },
+                success: function (response) {
+                    if (response.success) {
+                        $("#attachment_"+projectId+"_"+goalId).val('');
+                        $("#evidencediv_"+projectId+"_"+goalId).remove();
+                        $("#deleteAttachmentModal").modal("hide");
+                        toastr.success(`Evidence deleted successfully`);
+                    } else {
+                      toastr.error(`Error deleting attachment.`);
+                    }
+                },
+                error: function () {
+                  toastr.error(`Something went wrong.`); 
+                }
+            });
+        });
+    });
+</script>
 <script>
 //  $(document).ready(function() {
 //     $("#finaliseButton").click(function(e) {

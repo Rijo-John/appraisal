@@ -36,9 +36,6 @@ Route::get('/syncprojects', [CommonController::class, 'syncProjects'])->name('sy
 //Route::post('/syncdesignations', [CommonController::class, 'syncDesignations'])->name('syncdesignations');
 Route::match(['get', 'post'], '/syncdesignations', [CommonController::class, 'syncDesignations'])->name('syncdesignations');
 
-
-
-
 Route::get('/questions', [QuestionController::class, 'index']);
 Route::post('/save-designation-questions', [QuestionController::class, 'saveDesignationQuestions']);
 
@@ -55,6 +52,8 @@ Route::get('/nopermission', function () {
 Route::middleware(['auth:web'])->group(function () {
 
     
+    Route::get('/cfGhjYer/{filename}', [AppraisalFormController::class, 'download'])->name('file.download');
+    Route::post('/file/delete', [AppraisalFormController::class, 'delete'])->name('file.delete');
 
     Route::post('/logout', [AzureAuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

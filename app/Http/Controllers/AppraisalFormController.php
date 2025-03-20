@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\Response;
 
 class AppraisalFormController extends Controller
 {
@@ -166,7 +168,7 @@ class AppraisalFormController extends Controller
             $params = [
                 'url' => env('HEADS_CERTIFICATION_URL'),
                 'appraisalMonthType' => (int) $appraisalMonth,
-                'employeeId' => 11, // (int) $user->heads_id,
+                'employeeId' =>  (int) $user->heads_id, // 11
                 'appraisalMonth' => $formattedAppraisalEndDate //"2025-04",
             ];
             $certificationsfromHeads = $this->apiCallToGetCertificationDetailsHeads($params);
@@ -285,7 +287,7 @@ class AppraisalFormController extends Controller
             /**
             * Code Ends Here
             */
-            //echo '<pre>'; print_r($vigyanCourseDetails); die();
+            //echo '<pre>'; print_r($projectWiseData); die();
         
             return view('my_appraisal', [
                 'employeeData' => $employeeData,
@@ -359,10 +361,11 @@ class AppraisalFormController extends Controller
                     }
                 }
                 $validator = Validator::make($request->all(), $validationRules, $customMessages);
+                if ($validator->fails()) {
+                    return redirect()->back()->withErrors($validator)->withInput();
+                }
             }
-            if ($validator->fails()) {
-                return redirect()->back()->withErrors($validator)->withInput();
-            }
+            
             /**
             * Delete goals rating and key contributions from table.
             * Here, we will check whether goals rating and key contributions are already inserted if yes delete in case of updation. 
@@ -409,11 +412,14 @@ class AppraisalFormController extends Controller
                             $timestamp = time();
                             $newFilename = $cleanFilename.$goals->id.$timestamp.'.'.$extension;
                             $attachmentPath = $file->storeAs('uploads/evidence', $newFilename, 'public');
+                        }else {
+                            $oldAttachment =  $request->input('attachment_' . $projects->parats_project_id . '_' . $goals->id);
+                            if($oldAttachment!='')
+                            {
+                                $attachmentPath = $oldAttachment;
+                            }
                         }
-                        //echo '<pre>'; print_r($newFilename); 
-
-
-
+                        
 
                         $goalRatingData[] = [
                             'appraisal_cycle' => $appraisalCycle,
@@ -484,7 +490,7 @@ class AppraisalFormController extends Controller
             /**
             * Code Ends Here
             */
-            if ($request->input('action') === 'finalise') {
+            if ($request->input('is_finalise') == '1') {
                 DB::table('appraisal_form')
                     ->where('employee_heads_id', $userHeadsId)
                     ->where('id', $appraisal_form_id)
@@ -792,7 +798,38 @@ class AppraisalFormController extends Controller
 
     }
 
-    
+    public function download($filename)
+    {
+        $filePath = storage_path('app/public/uploads/evidence/' . $filename);
+
+        if (file_exists($filePath)) {
+            return response()->download($filePath);
+        } else {
+            abort(404, 'File not found');
+        }
+    }
+
+    public function delete(Request $request)
+    {
+        $request->validate([
+            'goal_rating_id' => 'required',
+            'goal_id' => 'required',
+            'goal_rating_id' => 'required',
+        ]);
+
+        $attachmentPath = 'public/' . $request->attachment;
+
+        if (Storage::exists($attachmentPath)) {
+            Storage::delete($attachmentPath);
+        }
+
+        DB::table('employee_goal_ratings')
+            ->where('id', $request->goal_rating_id)
+            ->where('goal_id', $request->goal_id)
+            ->update(['attachment' => null]);
+        return response()->json(['success' => true]);
+    }
+
 
 
 }

@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
   @section('content')
   <main class="col  ms-sm-auto  content-wrapper">
@@ -115,7 +116,9 @@
 
 
       $(document).ready(function() {
-
+        if($("#self_finalise").val() == 1) { 
+          $('input, select, textarea').prop('disabled', true);
+        }
         $("#confirmSelfRating").click(function(e) {
             $("#finaliseButton").prop("disabled", true).text("Submitting...");
             $("#appraisal_draft").prop("disabled", true);

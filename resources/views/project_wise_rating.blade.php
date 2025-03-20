@@ -1,8 +1,4 @@
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
- 
 <div class="card">
   <div class="card-body card-body-scrollable-content">
     <div class="row align-items-center">
