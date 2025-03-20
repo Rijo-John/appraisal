@@ -43,7 +43,9 @@ class AzureAuthController extends Controller
         $user = InternalUser::where('email', $azureUser->getEmail())
                         ->where('status', 'Active')
                         ->first();
-        $userDepartment = $user['department_id'];
+        $userDepartment = $user ? $user->department_id : null;
+        $userRole = $user ? $user->role : null;  
+        //dd($userRole); 
         $nonTechnicalDepartments = explode(',', env('NON_TECHNICAL_DEPARTMENT_IDS', ''));
 
         //dd($user['first_name'].' '. $user['last_name']);
@@ -56,6 +58,8 @@ class AzureAuthController extends Controller
             session(['logged_user_heads_id' => $user['heads_id']]);
             session(['logged_user' => $user['first_name'].' '. $user['last_name']]);
             session(['logged_user_designation_id' => $user['designation_id']]);
+            session(['logged_user_role' => $userRole]);
+
             $appraisalFormData = $this->getAppraisalFormData($user['heads_id']);
             $currentAppraisalCycleData = $this->getCurrentAppraisalCycle();
             $appraiserOfficerHeadsId = ($appraisalFormData && $appraisalFormData->appraiser_officer_heads_id)?$appraisalFormData->appraiser_officer_heads_id:0;

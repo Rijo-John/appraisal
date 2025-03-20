@@ -274,7 +274,7 @@ class CommonController extends Controller
                 'designation_id' => $user->designation_id,
                 'department_id' => $user->department_id,
                 'practise' => $user->practise,
-                'status'=>1,
+                'status'=>0,
                 'appraisal_cycle_id' =>$currentAppraisalCycle,
                 'appraisal_category' =>$appraisalCategory,
                 'appraisal_sub_category' =>$appraisalSubCategory,

@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class AppraisalForm extends Model
+class EmployeeGoalRating extends Model
 {
     use HasFactory;
-    protected $table = 'appraisal_form';
-    protected $fillable = ['status'];
+
+    protected $table = "employee_goal_ratings"; 
+
+    
 }

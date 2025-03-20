@@ -63,18 +63,24 @@
                   Administration
                 </a>
               </li> -->
+              @if(session('logged_user_role') == 1 || session('logged_user_role') == 2)
+                <li class="nav-item dropend">
+                    <a class="nav-link border-bottom gap-2 dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-gear"></i>
+                        Administration
+                        <span></span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-start-sm">
+                        @if(session('logged_user_role') == 1)
+                            <li><a class="dropdown-item" href="{{ route('assign.admin') }}">Assign Admin</a></li>
+                        @endif
+                        @if(session('logged_user_role') == 2 || session('logged_user_role') == 1)
+                            <li><a class="dropdown-item" href="{{ route('appraisaldata') }}">Appraisal</a></li>
+                        @endif
+                    </ul>
+                </li>
+              @endif
 
-              <li class="nav-item dropend">
-                <a class="nav-link border-bottom gap-2 dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="bi bi-gear"></i>
-                  Administration
-                  <span></span>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-start-sm">
-                  <li><a class="dropdown-item" href="{{ route('assign.admin')}}">Assign Admin</a></li>
-                  <li><a class="dropdown-item" href="{{ route('appraisal.view')}}">Appraisal</a></li>
-                </ul>
-              </li>
             </ul>
             <ul class="nav flex-column logout-btn">
 

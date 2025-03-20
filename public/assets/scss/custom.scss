@@ -411,3 +411,16 @@ h6{
 }
 
 
+.action-icon{
+  text-decoration:none;
+  color: $body-color;
+  .bi{
+  font-size:18px;
+  }
+}
+.center-align-container{
+  display: grid;
+  height: 100vh;
+  width: 100vw;
+  align-items: center;
+}
