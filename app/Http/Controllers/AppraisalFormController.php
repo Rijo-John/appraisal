@@ -484,7 +484,7 @@ class AppraisalFormController extends Controller
             /**
             * Code Ends Here
             */
-            if ($request->input('action') === 'finalise') {
+            if ($request->input('is_finalise') == '1') {
                 DB::table('appraisal_form')
                     ->where('employee_heads_id', $userHeadsId)
                     ->where('id', $appraisal_form_id)
@@ -495,6 +495,7 @@ class AppraisalFormController extends Controller
         }
         else if($appraisal_category == 2) /////////////////////////   Code by Sooraj /////////////////////////////////////
         {
+            //dd($request->all());
             $appraiserOfficerName = $sessionData['appraiserOfficerName'];
             $userHeadsId = $sessionData['logged_user_heads_id'];
             $appraisalCycle = $sessionData['current_appraisal_cycle'];
@@ -515,13 +516,13 @@ class AppraisalFormController extends Controller
             ->exists();
     
     
-            if ($submittedGoalRatings) {
+            /*if ($submittedGoalRatings) {
                 DB::table('employee_goal_ratings')
                     ->where('appraisal_cycle', $appraisalCycle)
                     ->where('employee_heads_id', $userHeadsId)
                     ->delete();
     
-            }
+            }*/
     
             $submittedGeneralData = DB::table('general_data_by_appraisee')
                 ->where('appraisal_cycle', $appraisalCycle)
@@ -548,7 +549,7 @@ class AppraisalFormController extends Controller
             $goalIndex = 1;
     
             // **Check if the user clicked "Finalise"**
-            if ($request->input('action') === 'finalise') {
+            if ($request->input('is_finalise') === '1') {
                 foreach ($user_goals as $goals) {
                     $ratingValue = 'rating_' . $goals->id;
                     $validationRules[$ratingValue] = 'required|in:0,1,5,10';
@@ -569,10 +570,7 @@ class AppraisalFormController extends Controller
                 $customMessages["$fileInputName.max"] = "The evidence file for goal ID {$goals->id} must not be larger than 2MB.";
             }
     
-            /*$customMessages = [
-                'evidence_*.mimes' => "The evidence file must be a PDF, JPG, or PNG.",
-                'evidence_*.max' => "The evidence file must not be larger than 2MB."
-            ];*/
+           
     
             $validator = Validator::make($request->all(), $validationRules, $customMessages);
     
@@ -600,15 +598,24 @@ class AppraisalFormController extends Controller
     
             //$request->validate($validationRules, $customMessages);
             $insertData = [];
+
             foreach ($user_goals as $goals) {
                 $ratingValue = 'rating_' . $goals->id;
                 $empremarks = 'remarks_' . $goals->id;
                 $fileInputName = 'evidence_' . $goals->id;
-                $attachmentPath = null;
+                //$attachmentPath = null;
+
+                $existingAttachment = DB::table('employee_goal_ratings')
+                    ->where('appraisal_cycle', $appraisalCycle)
+                    ->where('employee_heads_id', $userHeadsId)
+                    ->where('goal_id', $goals->id)
+                    ->value('attachment');
+
+                $attachmentPath = $existingAttachment;
     
                 if ($request->hasFile($fileInputName)) {
                     $file = $request->file($fileInputName);
-                    $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                    $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);                    
                     $cleanFilename = preg_replace('/[^A-Za-z0-9_\-]/', '_', $originalFilename);
                     $extension = $file->getClientOriginalExtension();
                     $timestamp = time();
@@ -618,16 +625,20 @@ class AppraisalFormController extends Controller
     
                 
     
-                DB::table('employee_goal_ratings')->insert([
-                    'appraisal_cycle' => $appraisalCycle,
-                    'employee_heads_id' => $userHeadsId,
-                    'goal_id' => $goals->id,
-                    'parats_project_id' => 0,
-                    'rating' => $request->input($ratingValue),
-                    'employee_comment' => $request->input($empremarks),
-                    'appraisal_form_id' => $appraisalFormId,
-                    'attachment' => $attachmentPath
-                ]);
+                DB::table('employee_goal_ratings')->updateOrInsert(
+                    [
+                        'appraisal_cycle' => $appraisalCycle,
+                        'employee_heads_id' => $userHeadsId,
+                        'goal_id' => $goals->id,
+                        'appraisal_form_id' => $appraisalFormId
+                    ],
+                    [
+                        'parats_project_id' => 0,
+                        'rating' => $request->input($ratingValue),
+                        'employee_comment' => $request->input($empremarks),
+                        'attachment' => $attachmentPath
+                    ]
+                );
     
                 
             }
@@ -640,7 +651,7 @@ class AppraisalFormController extends Controller
                 'suggestions_for_improvement' => $request->input('appraiser_comment')
             ]);
     
-            if ($request->input('action') === 'finalise') {
+            if ($request->input('is_finalise') === '1') {
                 DB::table('appraisal_form')
                     ->where('employee_heads_id', $userHeadsId)
                     ->where('id', $appraisalFormId)

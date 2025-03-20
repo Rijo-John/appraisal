@@ -32,6 +32,7 @@
             <form action="{{ route('employeeGoalSubmit') }}" id="myAppForm" method="POST" enctype="multipart/form-data">
            
             @csrf
+             <input type="hidden" name="self_finalise" id="self_finalise" value="<?=$selfFinalise?>" />
             <div class="row align-items-center mb-3">
               <div class="col">
                 <h3 class="heading-color mb-0">My Appraisal</h3>
@@ -136,6 +137,7 @@
         });
 
         $("#finaliseButton").click(function(e) {
+          debugger;
           e.preventDefault();
           var self_finalise = $("#self_finalise").val();
           if(self_finalise == 0) { 
