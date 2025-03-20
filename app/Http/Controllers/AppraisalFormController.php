@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\AppraisalFinalizedNotification;
 
 class AppraisalFormController extends Controller
 {
@@ -657,6 +659,30 @@ class AppraisalFormController extends Controller
                     ->where('id', $appraisalFormId)
                     ->where('appraisal_cycle_id', $appraisalCycle)
                     ->update(['self_finalise' => 1]);
+
+                $employeeDetails = DB::table('appraisal_form')
+                    ->join('internal_users', 'appraisal_form.employee_heads_id', '=', 'internal_users.heads_id')
+                    ->where('appraisal_form.employee_heads_id', $userHeadsId)
+                    ->where('appraisal_form.id', $appraisalFormId)
+                    ->where('appraisal_cycle_id', $appraisalCycle)
+                    ->select(
+                        'internal_users.email as employeeEmail',
+                        DB::raw("CONCAT(internal_users.first_name, ' ', internal_users.last_name) as employeeName")
+                    )
+                    ->first();
+
+                if ($employeeDetails && $employeeDetails->employeeEmail) {
+                    $ccEmails = explode(',', env('APPRAISAL_START_MAIL_CC_ADDRESSES'));
+
+                    Mail::to($employeeDetails->employeeEmail)
+                        ->cc($ccEmails)
+                        ->send(new AppraisalFinalizedNotification(
+                            $employeeDetails->employeeEmail, 
+                            $employeeDetails->employeeName, 
+                            $appraiserOfficerName, 
+                            $appraisalCycle
+                        ));
+                }
             }
         }
 
