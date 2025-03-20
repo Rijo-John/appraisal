@@ -75,9 +75,15 @@ class AzureAuthController extends Controller
             // if (session('appraisal_category') == 2) {
             //     return redirect()->route('myappraisalnontechnical')->with('success', 'Successfully logged in!');
             // }
-            return redirect()->route('myappraisal')->with('success', 'Successfully logged in!');
-
-            
+            //echo '<pre>'; print_r($user['heads_id']); die();
+            if($appraisalCategory == 1 || $appraisalCategory == 2 || $appraisalCategory == 0) {
+                return redirect()->route('myappraisal')->with('success', 'Successfully logged in!');
+            } elseif($appraisalCategory == 3) {
+                return redirect()->route('myapp')->with('success', 'Successfully logged in!');
+            } else {
+                return redirect()->route('nopermission');
+            }
+               
         } else {
             // If user does not exist, show an error
             return response()->view('errors.unauthorized', ['email' => $azureUser->getEmail()], 403);
@@ -128,7 +134,5 @@ class AzureAuthController extends Controller
 
         return redirect($microsoftLogoutUrl);
     }*/
-
-
 
 }

@@ -76,7 +76,7 @@
                                             </li>
                                         @endforeach 
                                     @else
-                                        <li>-</li>
+                                        -
                                     @endif
                                 </ol>
                             </td>
@@ -123,13 +123,17 @@
                         <tr>
                             <td>Workshops / Seminars attended</td>
                             <td>
-                                <textarea name="employee_workshops"  class="form-control" placeholder="Enter your Workshops / Seminars attended"></textarea>
+                            @php
+                                $workshops_attended = isset($general_data[0]) ? ($general_data[0]->workshops_attended ?? '') : '';
+                                $trainings_conducted = isset($general_data[0]) ? ($general_data[0]->trainings_conducted ?? '') : '';
+                            @endphp
+                                <textarea name="employee_workshops"  class="form-control" placeholder="Enter your Workshops / Seminars attended"><?=$workshops_attended?></textarea>
                             </td>
                         </tr>
                         <tr>
                             <td>Trainings / Mentoring conducted during the appraisal period</td>
                             <td>
-                                <textarea name="employee_training_conducted" class="form-control" placeholder="Enter your Trainings / Mentoring conducted"></textarea>
+                                <textarea name="employee_training_conducted" class="form-control" placeholder="Enter your Trainings / Mentoring conducted"><?=$trainings_conducted?></textarea>
                             </td>
                         </tr>
                     </tbody>

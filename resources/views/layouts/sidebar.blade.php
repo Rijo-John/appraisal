@@ -11,8 +11,17 @@
           <div class="offcanvas-body d-md-flex flex-column pt-lg-3">
             <ul class="nav flex-column">
               <li class="nav-item">
-                <a class="nav-link border-bottom gap-2 active" href="/my-appraisal">
-
+              @if(session()->has('appraisal_category'))
+                  @if(session('appraisal_category') == 1 || session('appraisal_category') == 2)
+                    <a class="nav-link border-bottom gap-2 active" href="/my-appraisal">
+                  @elseif(session('appraisal_category') == 3)
+                    <a class="nav-link border-bottom gap-2 active" href="/myapp">
+                  @else
+                    <a class="nav-link border-bottom gap-2 active" href="/nopermission">
+                  @endif
+                @else
+                <a class="nav-link border-bottom gap-2 active" href="/nopermission">
+              @endif
                   <i class="bi bi-person-up" ></i>
                   <div>
                     My Appraisal

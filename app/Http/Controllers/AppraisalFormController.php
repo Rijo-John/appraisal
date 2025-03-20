@@ -78,24 +78,28 @@ class AppraisalFormController extends Controller
                         'moodlewsrestformat' => 'json',
                         'start_date' => $appraisalCycleData[0]->appraisal_period_start,
                         'end_date' => $appraisalCycleData[0]->appraisal_period_end,
-                        'email' => "aneesh.ks@thinkpalm.com", //$user->email
+                        'email' => $user->email
                     ];
                     $response = Http::withHeaders([
                         'Content-Type' => 'application/json'
                     ])->get($baseUrl, $params);
                     $vigyanData = $response->json(); 
-
+                    $total_dedication = 0;
+                    $totalVigyanTimeSpentSec = 0;
+                    $targeted_hours_sec = 0;
                     $vigyanCourseDetails['courses'] = [];
                     $vigyanCourseDetails['timeSpent'] = 0;
                     $vigyanCourseDetails['calculatePercentage'] = 0;
                     $vigyanCourseDetails['training_name'] = [];
                     $vigyanCourseDetails['trainingTimeSpent'] = 0;
                     $vigyanCourseDetails['totalVigyanTimeSpent'] = 0;
-
+                    $totaltrainingDuration = 0; 
+                    $vigyanTime = 0;
+                    $trainingTime = 0;
+//echo '<pre>'; print_r($vigyanData); die();
                     if(count($vigyanData['vigyan_training_details']) > 0 || count($vigyanData['internal_hours']) > 0 )
                     {
-                        $vigyanTime = 0;
-                        $trainingTime = 0;
+                        
                         $vigyanCourseDetails['courses'] = [];
                         $vigyanCourseDetails['timeSpent'] = 0;
                         $vigyanCourseDetails['calculatePercentage'] = "NA";
@@ -116,30 +120,29 @@ class AppraisalFormController extends Controller
                             $total_dedication = $vigyanData['total_dedication'];
                             $targeted_hours_sec  = $vigyanData['targeted_hours'] * 60 * 60;
                             
-                        }
-                        
-                        if(count($vigyanData['internal_hours']) > 0) {
-                            $totaltrainingDuration = 0; 
-                            foreach($vigyanData['internal_hours'] as $index => $training)
-                            {
-                                $vigyanCourseDetails['training_name'][] = $training['training_name'];
-                                $totaltrainingDuration += $training['time_spent']; 
-                            }
-                            $vigyanCourseDetails['trainingTimeSpent'] = $totaltrainingDuration." Hours";
-                            $trainingTime = $totaltrainingDuration;
-                            $totalVigyanTimeSpentSec = ($totaltrainingDuration*60*60)+$vigyanTime;
-                            $hours = floor($totalVigyanTimeSpentSec / 3600); 
-                            $minutes = floor(($totalVigyanTimeSpentSec % 3600) / 60); 
-                            $vigyanCourseDetails['totalVigyanTimeSpent'] = $hours." Hours ".$minutes ." Minutes";
-                        }
-
-                        if($total_dedication+$totalVigyanTimeSpentSec > 0 && $targeted_hours_sec >0)
-                        {
-                            $calculatePercentage = (($total_dedication+$totalVigyanTimeSpentSec)/$targeted_hours_sec) * 100;
-                            $vigyanCourseDetails['calculatePercentage'] = round($calculatePercentage,2);
-                        }
+                        } 
                         
                     }
+                    if(count($vigyanData['internal_hours']) > 0) {
+                        
+                        foreach($vigyanData['internal_hours'] as $index => $training)
+                        {
+                            $vigyanCourseDetails['training_name'][] = $training['training_name'];
+                            $totaltrainingDuration += $training['time_spent']; 
+                        }
+                        $vigyanCourseDetails['trainingTimeSpent'] = $totaltrainingDuration." Hours";
+                        $trainingTime = $totaltrainingDuration;
+                        
+                    }
+                    if($total_dedication+$totalVigyanTimeSpentSec > 0 && $targeted_hours_sec >0)
+                    {
+                        $calculatePercentage = (($total_dedication+$totalVigyanTimeSpentSec)/$targeted_hours_sec) * 100;
+                        $vigyanCourseDetails['calculatePercentage'] = round($calculatePercentage,2);
+                    } 
+                    $totalVigyanTimeSpentSec = ($totaltrainingDuration*60*60)+$vigyanTime;
+                    $hours = floor($totalVigyanTimeSpentSec / 3600); 
+                    $minutes = floor(($totalVigyanTimeSpentSec % 3600) / 60); 
+                    $vigyanCourseDetails['totalVigyanTimeSpent'] = $hours." Hours ".$minutes ." Minutes";  
                 
                 } else {
                     echo 'No valid appraisal period start date found.';
@@ -255,7 +258,7 @@ class AppraisalFormController extends Controller
                                 ->where('employee_heads_id', $userHeadsId)
                                 ->get();
 
-                $user_projects =  $this->getEmployeeProjects($userHeadsId,$appraisalStartDateYMD,$appraisalEndDateYMD);
+                $user_projects =  $this->getEmployeeProjects($userHeadsId);
                 $submitted_goal_ratings =  $this->getEmployeeGoalRatingdata($appraisalCycle,$userHeadsId,$appraisal_form_id);
                 $submitted_project_extra =  $this->getEmployeeProjectExtra($appraisalCycle,$userHeadsId,$appraisal_form_id);
                 $submitted_general_data =  $this->getEmployeeGeneralData($appraisalCycle,$userHeadsId,$appraisal_form_id);
@@ -295,6 +298,8 @@ class AppraisalFormController extends Controller
                 'certificationsfromHeads' => $certificationsfromHeads,
                 'selfFinalise' => $selfFinalise,
             ]);
+        } else {
+            return redirect()->route('nopermission');
         }
     }
     public function submitEmpGoals(Request $request)
@@ -306,16 +311,16 @@ class AppraisalFormController extends Controller
         $appraisalCycle = $sessionData['current_appraisal_cycle'];
         $appraisal_form_id = $sessionData['appraisal_form_id'];
         $appraisalEndDate = $appraisalStartDateYMD = $appraisalEndDateYMD = Carbon::now()->format('Y-m-d');
-        $appraisalCycleData =  DB::table('appraisal_cycle')
-                            ->select('appraisal_cycle','appraisal_period_start','appraisal_period_end')
-                            ->where('id', $appraisalCycle)
-                            ->where('status', 1)
-                            ->get();
-        if($appraisalCycleData) {
-            if (!empty($appraisalCycleData) && !empty($appraisalCycleData[0]->appraisal_period_start) &&  !empty($appraisalCycleData[0]->appraisal_period_end)) {
-                $appraisalStartDateYMD = $appraisalCycleData[0]->appraisal_period_start;
-                $appraisalEndDateYMD = $appraisalCycleData[0]->appraisal_period_end;
-            }
+        
+        $appraiseeSubCategory =  DB::table('appraisal_form')
+                                ->select('appraisal_sub_category','self_finalise')
+                                ->where('id', $appraisal_form_id)
+                                ->where('employee_heads_id', $userHeadsId)
+                                ->where('status', 1)
+                                ->get();
+        $self_finalise = 1;
+        if(count($appraiseeSubCategory) > 0) {
+            $self_finalise = $appraiseeSubCategory[0]->self_finalise;
         }
         /**
         * Grant access to the employee for the appraisal form. 
@@ -327,9 +332,37 @@ class AppraisalFormController extends Controller
         /**
         * Code Ends Here
         */  
-        if($appraisal_category == 1)        /////////////////////////   Code by Rijo /////////////////////////////////////
+        if($appraisal_category == 1 && $self_finalise == 0)        /////////////////   Code by Rijo SUBMIT ////////////////////////////////
         {
+            $user_goals =  DB::table('goals')
+                            ->select(
+                                    'id','goal','employee_heads_id','appraisal_cycle','weightage'
+                            )
+                            ->where('appraisal_cycle', $appraisalCycle)
+                            ->where('employee_heads_id', $userHeadsId)
+                            ->get();
+            $user_projects =  $this->getEmployeeProjects($userHeadsId);
         
+            if ($request->input('is_finalise') == '1') {
+                foreach ($user_projects as $projects)
+                {
+                    $i = 1;
+                    foreach($user_goals as $goals)
+                    {
+                        $ratingValue = 'rating_' . $projects->parats_project_id . '_' . $goals->id;
+                        $validationRules[$ratingValue] = 'required|in:1,2,3,4,0';
+
+                         // Custom error message with index
+                        $customMessages["$ratingValue.required"] = "All Rating is required for Project #".$projects->project_name. " - Goal #".$i;
+                        $customMessages["$ratingValue.in"] = "Invalid rating selected for Project #".$projects->project_name. " - Goal #".$i;
+                        $i++;
+                    }
+                }
+                $validator = Validator::make($request->all(), $validationRules, $customMessages);
+            }
+            if ($validator->fails()) {
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
             /**
             * Delete goals rating and key contributions from table.
             * Here, we will check whether goals rating and key contributions are already inserted if yes delete in case of updation. 
@@ -345,14 +378,7 @@ class AppraisalFormController extends Controller
             * Insert project - goals wise rating 
             * This block of code insert  the goal and rating of each project
             */
-                $user_goals =  DB::table('goals')
-                                ->select(
-                                        'id','goal','employee_heads_id','appraisal_cycle','weightage'
-                                )
-                                ->where('appraisal_cycle', $appraisalCycle)
-                                ->where('employee_heads_id', $userHeadsId)
-                                ->get();
-                $user_projects =  $this->getEmployeeProjects($userHeadsId,$appraisalStartDateYMD,$appraisalEndDateYMD);
+               
             
                 foreach ($user_projects as $projects)
                 {
@@ -371,6 +397,24 @@ class AppraisalFormController extends Controller
                         $goalRatingData = [];
                         $ratingValue = 'rating_' . $projects->parats_project_id . '_' . $goals->id;
                         $empremarks = 'remarks_' . $projects->parats_project_id . '_' . $goals->id;
+
+                        $fileInputName = 'evidence_' . $projects->parats_project_id . '_' . $goals->id;
+                        $attachmentPath = null;
+            
+                        if ($request->hasFile($fileInputName)) {
+                            $file = $request->file($fileInputName);
+                            $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                            $cleanFilename = preg_replace('/[^A-Za-z0-9_\-]/', '_', $originalFilename);
+                            $extension = $file->getClientOriginalExtension();
+                            $timestamp = time();
+                            $newFilename = $cleanFilename.$goals->id.$timestamp.'.'.$extension;
+                            $attachmentPath = $file->storeAs('uploads/evidence', $newFilename, 'public');
+                        }
+                        //echo '<pre>'; print_r($newFilename); 
+
+
+
+
                         $goalRatingData[] = [
                             'appraisal_cycle' => $appraisalCycle,
                             'appraisal_form_id'  => $appraisal_form_id,
@@ -378,7 +422,8 @@ class AppraisalFormController extends Controller
                             'goal_id' => $goals->id,
                             'parats_project_id' => $projects->parats_project_id,
                             'rating' => $request->input($ratingValue),
-                            'employee_comment' => $request->input($empremarks)
+                            'employee_comment' => $request->input($empremarks),
+                            'attachment' => $attachmentPath
                         ];
                         $this->appraisalFormService->insertToGoalRatings($goalRatingData);
                     }
@@ -439,6 +484,13 @@ class AppraisalFormController extends Controller
             /**
             * Code Ends Here
             */
+            if ($request->input('action') === 'finalise') {
+                DB::table('appraisal_form')
+                    ->where('employee_heads_id', $userHeadsId)
+                    ->where('id', $appraisal_form_id)
+                    ->where('appraisal_cycle_id', $appraisalCycle)
+                    ->update(['self_finalise' => 1]);
+            }
 
         }
         else if($appraisal_category == 2) /////////////////////////   Code by Sooraj /////////////////////////////////////
@@ -643,59 +695,7 @@ class AppraisalFormController extends Controller
 
         return $decrypted;
     }
-    public function submitEmpGoalsOLd(Request $request)
-    {
-        //echo '<pre>'; print_r($request->input()); die();
-        $sessionData = session()->all();
-        $appraiserOfficerName = $sessionData['appraiserOfficerName'];
-        $userHeadsId = $sessionData['logged_user_heads_id'];
-        $appraisalCycle = $sessionData['current_appraisal_cycle'];
-
-        $submittedGoalRatings = DB::table('employee_goal_ratings')
-                                ->where('appraisal_cycle', $appraisalCycle)
-                                ->where('employee_heads_id', $userHeadsId)
-                                ->exists(); 
-        //echo '<pre>'; print_r($submittedGoalRatings); die();
-        if ($submittedGoalRatings) {
-            // Delete existing records
-            DB::table('employee_goal_ratings')
-                ->where('appraisal_cycle', $appraisalCycle)
-                ->where('employee_heads_id', $userHeadsId)
-                ->delete();
-        }
-        $user_goals =  DB::table('goals')
-                       ->select(
-                            'id','goal','employee_heads_id','appraisal_cycle','weightage'
-                        )
-                        ->where('appraisal_cycle', $appraisalCycle)
-                        ->where('employee_heads_id', $userHeadsId)
-                        ->get();
-        //echo '<pre>'; print_r($request->input()); die();           
-        foreach ($user_goals as $goals) {
-            $projectCount = $request->input('hiddenCount'.$goals->id);
-            for($i = 1;$i<=$projectCount;$i++)
-            {
-                $projectId = 'project_' . $goals->id . '_' . $i;
-                $ratingValue = 'rating_' . $goals->id . '_' . $i;
-                $empremarks = 'remarks_' . $goals->id . '_' . $i;
-                
-                if ($request->has($projectId) && $request->filled($projectId) && 
-                    $request->has($ratingValue) && $request->filled($ratingValue)) {
-                    DB::table('employee_goal_ratings')->insert([
-                        'appraisal_cycle' => $appraisalCycle,
-                        'employee_heads_id' => $userHeadsId,
-                        'goal_id' => $goals->id,
-                        'parats_project_id' => $request->input($projectId),
-                        'rating' => $request->input($ratingValue),
-                        'employee_comment' => $request->input($empremarks)
-                    ]);
-                }
-            }
-        }
-
-        return redirect()->route('myappraisal');
-
-    }
+    
 
     public function reviewEmployeeList()
     {
@@ -703,22 +703,12 @@ class AppraisalFormController extends Controller
         return view('empolyee_review_listing', compact('employees'));
     }
     
-    public function getEmployeeProjects($userHeadsId,$startDate,$endDate)
+    public function getEmployeeProjects($userHeadsId)
     {
-        // $user_projects_duplicate = DB::table('project_allocations as pa')
-        //                     ->leftJoin('projects as p', 'pa.parats_project_id', '=', 'p.parats_project_id')
-        //                     ->select('p.project_code','p.project_name', 'p.id', 'pa.parats_project_id','pa.allocation_from','pa.allocation_to')
-        //                     ->where('pa.heads_id', $userHeadsId)
-        //                     ->where('p.id', '>', 0)
-        //                     ->where(function ($query) use ($startDate, $endDate) {  
-        //                         $query->whereBetween('pa.allocation_from', [$startDate, $endDate])
-        //                               ->orWhereBetween('pa.allocation_to', [$startDate, $endDate]);
-        //                     })
-        //                     ->orderBy('p.project_code')
-        //                     ->get();
         $user_projects_duplicate = DB::table('user_allocated_projects')
                             ->select('project_code','project_name', 'project_id as id', 'parats_project_id')
                             ->where('user_heads_id', $userHeadsId)
+                            ->where('status', 1)
                             ->orderBy('project_name')
                             ->get();
         $user_projects = $user_projects_duplicate->unique('project_code')->map(function ($project) {
@@ -728,6 +718,7 @@ class AppraisalFormController extends Controller
         
         return count($user_projects) > 0 ? $user_projects : [];
     }
+
     public function getEmployeeGoalRatingdata($appraisalCycle,$userHeadsId,$appraisal_form_id)
     {
         $goal_ratings =  DB::table('employee_goal_ratings')
@@ -801,11 +792,7 @@ class AppraisalFormController extends Controller
 
     }
 
-
-
-
-
-
+    
 
 
 }

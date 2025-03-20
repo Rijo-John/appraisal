@@ -14,6 +14,7 @@ use App\Http\Controllers\AppraisalNonTechnicalFormController;
 use App\Http\Controllers\GoalController;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
+use App\Http\Controllers\MyAppController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -48,7 +49,9 @@ Route::post('/saveRatings', [AttributeReviewController::class, 'saveRatings']);
 Route::get('/login', [AzureAuthController::class, 'redirectToAzure'])->name('login');
 Route::get('/auth/azure', [AzureAuthController::class, 'redirectToAzure'])->name('azure.login');
 Route::get('/auth/callback', [AzureAuthController::class, 'handleAzureCallback']);
-
+Route::get('/nopermission', function () {
+    return view('no_permission'); 
+})->name('nopermission');
 Route::middleware(['auth:web'])->group(function () {
 
     
@@ -68,6 +71,11 @@ Route::middleware(['auth:web'])->group(function () {
     Route::get('/my-appraisal', [AppraisalFormController::class, 'index'])->name('myappraisal');
     Route::get('/my-appraisal-non-technical', [AppraisalNonTechnicalFormController::class, 'index'])->name('myappraisalnontechnical');
     Route::post('/employee-goal-submit-non-technical', [AppraisalNonTechnicalFormController::class, 'submitEmpGoalsNonTechnical'])->name('employeeGoalSubmitNonTechnical');
+
+    Route::get('/my-app', [MyAppController::class, 'appraisal_project_wise'])->name('myapp');
+    Route::post('/my-app-submit', [MyAppController::class, 'appraisal_project_wise_submit'])->name('myappsubmit');
+    
+    
     Route::middleware(['superadmin'])->group(function () {
         Route::get('/administration', [AdministrationController::class, 'index'])->name('administration');
         Route::get('/assign-admin', [AdminController::class, 'showAssignAdmin'])->name('assign.admin');
