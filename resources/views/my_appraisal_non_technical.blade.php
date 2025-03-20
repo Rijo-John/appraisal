@@ -79,13 +79,18 @@
                                         <div class="row mb-3 align-items-center">
                                             <label  class="col-sm-2 col-form-label">Evidence</label>
                                             <div class="col-sm-5">
-                                                <input class="form-control" type="file" name="evidence_{{ $goal->id }}_{{ $flag+1 }}" id="formFile">
+                                                <input class="form-control" type="file" name="evidence_{{ $goal->id }}" id="formFile">
                                                 
                                             </div>
                                             <div class="col">
                                                 @if(!empty($data->attachment))
                                                     <a href="{{ asset('storage/' . $data->attachment) }}" download >{{ basename($data->attachment) }}</a>
                                                 @endif
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col offset-sm-2 text-danger">
+                                                (Max file size 2MB, Allowed file types are  pdf,png,jpg)
                                             </div>
                                         </div>
 
@@ -160,6 +165,12 @@
                                             <label  class="col-sm-2 col-form-label">Evidence</label>
                                             <div class="col-sm-5">
                                                 <input class="form-control" type="file" name="evidence_{{ $goal->id }}" id="formFile">
+                                            </div>
+                                            
+                                            <div class="row">
+                                                <div class="col offset-sm-2 text-danger">
+                                                    (Max file size 2MB, Allowed file types are  pdf,png,jpg)
+                                                </div>
                                             </div>
                                         </div>
 
