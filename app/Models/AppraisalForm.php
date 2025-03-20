@@ -9,4 +9,5 @@ class AppraisalForm extends Model
 {
     use HasFactory;
     protected $table = 'appraisal_form';
+    protected $fillable = ['status'];
 }

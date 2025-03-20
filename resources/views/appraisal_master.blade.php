@@ -267,8 +267,10 @@
                                         _token: "{{ csrf_token() }}"
                                     },
                                     success: function (response) {
-                                        toastr.success(response.message, "Success");
-                                        setTimeout(() => location.reload(), 1500); // Reload after 1.5s
+                                        
+                                        toastr.warning(response.message, "Warning");
+
+                                        setTimeout(() => location.reload(), 3000); // Reload after 1.5s
                                     },
                                     error: function (xhr) {
                                         let errorMessage = "Something went wrong. Try again!";

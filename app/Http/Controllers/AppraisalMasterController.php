@@ -130,9 +130,9 @@ class AppraisalMasterController extends Controller
         }
 
         // Delete the appraisal record
-        $appraisal->delete();
+        $appraisal->update(['status' => 0]);
 
-        return response()->json(['message' => 'Appraisal deleted successfully'], 200);
+        return response()->json(['message' => 'Appraisal deleted successfully,Now the user is unable to submit the appraisal'], 200);
     }
 
     public function edit($id)
