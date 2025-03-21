@@ -23,6 +23,7 @@
                     $flag = 0;
                     foreach($goalWiseData[$goal->id] as $data)
                     {
+
             ?> 
                 <div class="row goal-rating-div-{{ $goal->id }}{{ $flag+1 }}">
                     <div class="col-xxl-9">
@@ -85,6 +86,13 @@
                                             <div class="col">
                                                 @if(!empty($data->attachment))
                                                     <a href="{{ asset('storage/' . $data->attachment) }}" download >{{ basename($data->attachment) }}</a>
+                                                    <i class="bi bi-x ms-1  delete-attachment" data-bs-toggle="modal"
+                                                      data-bs-target="#deleteAttachmentModal" 
+                                                      data-goal-id="{{$goal->id }}" 
+                                                      data-goal-rating-id="{{ $data->id }}"
+                                                      title="Delete"
+                                                      style="font-size: 17px; cursor: pointer;">
+                                                    </i>
                                                 @endif
                                             </div>
                                         </div>
@@ -166,7 +174,7 @@
                                             <div class="col-sm-5">
                                                 <input class="form-control" type="file" name="evidence_{{ $goal->id }}" id="formFile">
                                             </div>
-                                            
+
                                             <div class="row">
                                                 <div class="col offset-sm-2 text-danger">
                                                     (Max file size 2MB, Allowed file types are  pdf,png,jpg)
@@ -185,6 +193,24 @@
             <?php 
                 }
             ?>
+            </div>
+            <div class="modal fade" id="deleteAttachmentModal" tabindex="-1" aria-labelledby="deleteAttachmentModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteAttachmentModalLabel">Confirm Deletion</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete this evidence?<br>
+                            Once deleted, the file will be permanently removed and cannot be recovered.
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-danger" id="confirmDelete"><div class="d-flex align-items-center">Delete <div class="loader ms-2 delete-loader" style="display:none;"></div></div></button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         @endforeach
@@ -207,6 +233,42 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 $(document).ready(function() {
+    
+    let attachmentToDelete = "";
+    let goalId = "";
+    let goalRatingId = "";
+
+    $(".delete-attachment").click(function () {
+        goalId = $(this).data("goal-id");
+        goalRatingId = $(this).data("goal-rating-id");
+    });
+
+    $("#confirmDelete").click(function () {
+        $("#confirmDelete").prop("disabled", true);
+        $(".delete-loader").show();
+        $.ajax({
+            url: "{{ route('file.delete') }}",
+            type: "POST",
+            data: {
+                _token: "{{ csrf_token() }}",
+                goal_id: goalId,
+                goal_rating_id: goalRatingId
+            },
+            success: function (response) {
+                if (response.success) {                    
+                    $("#evidencediv_"+projectId+"_"+goalId).remove();
+                    $("#deleteAttachmentModal").modal("hide");
+                    toastr.success(`Evidence deleted successfully`);
+                } else {
+                  toastr.error(`Error deleting attachment.`);
+                }
+            },
+            error: function () {
+              toastr.error(`Something went wrong.`);
+            }
+        });
+    });
+
     $('#finaliseButton').click(function(event) {
         event.preventDefault(); // Prevent form submission
 
