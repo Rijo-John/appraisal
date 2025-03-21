@@ -54,6 +54,7 @@ Route::middleware(['auth:web'])->group(function () {
     
     Route::get('/cfGhjYer/{filename}', [AppraisalFormController::class, 'download'])->name('file.download');
     Route::post('/file/delete', [AppraisalFormController::class, 'delete'])->name('file.delete');
+    Route::post('/delete_attachment', [AppraisalFormController::class, 'deleteAttachment'])->name('deleteAttachment');
 
     Route::post('/logout', [AzureAuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

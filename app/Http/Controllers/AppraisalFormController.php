@@ -868,6 +868,36 @@ class AppraisalFormController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function deleteAttachment(Request $request){
+        //dd($request->all());
+        $request->validate([
+            'goal_rating_id' => 'required',
+            'goal_id' => 'required',
+        ]);
+
+        $goalRatingId = $request->input('goal_rating_id');
+        $goalId = $request->input('goal_id');
+
+        $attachment = DB::table('employee_goal_ratings')
+            ->where('id', $goalRatingId)
+            ->where('goal_id', $goalId)
+            ->value('attachment');
+        //dd($attachment);
+
+        if ($attachment) {
+            // Correct file path for Storage facade
+            if (Storage::disk('public')->exists($attachment)) {
+                Storage::disk('public')->delete($attachment);
+            }
+        }
+
+        DB::table('employee_goal_ratings')
+            ->where('id', $goalRatingId)
+            ->where('goal_id', $goalId)
+            ->update(['attachment' => null]);
+        return response()->json(['success' => true]);
+    }
+
 
 
 }

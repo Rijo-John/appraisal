@@ -83,9 +83,10 @@
                                                 <input class="form-control" type="file" name="evidence_{{ $goal->id }}" id="formFile">
                                                 
                                             </div>
-                                            <div class="col">
-                                                @if(!empty($data->attachment))
+                                            @if(!empty($data->attachment))
+                                            <div class="col" id="evidencediv_{{ $goal->id }}">
                                                     <a href="{{ asset('storage/' . $data->attachment) }}" download >{{ basename($data->attachment) }}</a>
+                                                    @if($selfFinalise !=1)
                                                     <i class="bi bi-x ms-1  delete-attachment" data-bs-toggle="modal"
                                                       data-bs-target="#deleteAttachmentModal" 
                                                       data-goal-id="{{$goal->id }}" 
@@ -93,8 +94,9 @@
                                                       title="Delete"
                                                       style="font-size: 17px; cursor: pointer;">
                                                     </i>
-                                                @endif
+                                                    @endif
                                             </div>
+                                            @endif
                                         </div>
                                         <div class="row">
                                             <div class="col offset-sm-2 text-danger">
@@ -247,7 +249,7 @@ $(document).ready(function() {
         $("#confirmDelete").prop("disabled", true);
         $(".delete-loader").show();
         $.ajax({
-            url: "{{ route('file.delete') }}",
+            url: "{{ route('deleteAttachment') }}",
             type: "POST",
             data: {
                 _token: "{{ csrf_token() }}",
@@ -256,7 +258,7 @@ $(document).ready(function() {
             },
             success: function (response) {
                 if (response.success) {                    
-                    $("#evidencediv_"+projectId+"_"+goalId).remove();
+                    $("#evidencediv_"+goalId).remove();
                     $("#deleteAttachmentModal").modal("hide");
                     toastr.success(`Evidence deleted successfully`);
                 } else {
