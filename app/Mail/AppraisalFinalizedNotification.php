@@ -14,13 +14,15 @@ class AppraisalFinalizedNotification extends Mailable
     public $employeeName;
     public $appraiserOfficerName;
     public $appraisalCycle;
+    public $pdfContent;
 
-    public function __construct($employeeEmail, $employeeName, $appraiserOfficerName, $appraisalCycle)
+    public function __construct($employeeEmail, $employeeName, $appraiserOfficerName, $appraisalCycle,$pdfContent)
     {
         $this->employeeEmail = $employeeEmail;
         $this->employeeName = $employeeName; // Store employee name
         $this->appraiserOfficerName = $appraiserOfficerName;
         $this->appraisalCycle = $appraisalCycle;
+        $this->pdfContent = $pdfContent;
     }
 
     public function build()
@@ -32,7 +34,14 @@ class AppraisalFinalizedNotification extends Mailable
                         'employeeName' => $this->employeeName, // Pass to the view
                         'appraiserOfficerName' => $this->appraiserOfficerName,
                         'appraisalCycle' => $this->appraisalCycle
-                    ]);
+                    ])
+                    ->attachData(
+                        $this->pdfContent,                        
+                        'Appraisal_' . $this->employeeName . '.pdf', 
+                        [
+                            'mime' => 'application/pdf',
+                        ]
+                    );
     }
 }
 

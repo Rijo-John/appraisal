@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AppraisalFinalizedNotification;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 
 class AppraisalFormController extends Controller
@@ -685,13 +686,25 @@ class AppraisalFormController extends Controller
                 if ($employeeDetails && $employeeDetails->employeeEmail) {
                     $ccEmails = explode(',', env('APPRAISAL_START_MAIL_CC_ADDRESSES'));
 
+                    // Prepare data to send to PDF view
+                    $pdfData = [
+                        'employeeDetails' => $employeeDetails,
+                        'appraiserOfficerName' => $appraiserOfficerName,
+                        'appraisalCycle' => $appraisalCycle,
+                        // Add other data as needed
+                    ];
+
+                    $pdf = Pdf::loadView('appraisal.pdf', $pdfData);
+                    $pdfContent = $pdf->output();
+
                     Mail::to($employeeDetails->employeeEmail)
                         ->cc($ccEmails)
                         ->send(new AppraisalFinalizedNotification(
                             $employeeDetails->employeeEmail, 
                             $employeeDetails->employeeName, 
                             $appraiserOfficerName, 
-                            $appraisalCycle
+                            $appraisalCycle,
+                            $pdfContent
                         ));
                 }
             }
