@@ -175,11 +175,13 @@ class AppraisalFormController extends Controller
                 'appraisalMonth' => $formattedAppraisalEndDate //"2025-04",
             ];
             $certificationsfromHeads = $this->apiCallToGetCertificationDetailsHeads($params);
+            //echo '<pre>'; print_r($certificationsfromHeads); die();
             if (isset($certificationsfromHeads->AppraisalCertListDataResponse) && count($certificationsfromHeads->AppraisalCertListDataResponse) > 0) {
                 // Your logic here
             }
             else
             {
+                $certificationsfromHeads = new \stdClass();
                 $certificationsfromHeads->AppraisalCertListDataResponse = [];
             }
             
@@ -347,160 +349,162 @@ class AppraisalFormController extends Controller
                             ->where('employee_heads_id', $userHeadsId)
                             ->get();
             $user_projects =  $this->getEmployeeProjects($userHeadsId);
-        
-            if ($request->input('is_finalise') == '1') {
-                foreach ($user_projects as $projects)
-                {
-                    $i = 1;
-                    foreach($user_goals as $goals)
+            if(count($user_goals) > 0 && count($user_projects) > 0) { 
+                $validationRules = [];
+                $customMessages = [];
+                if ($request->input('is_finalise') == '1') {
+                    foreach ($user_projects as $projects)
                     {
-                        $ratingValue = 'rating_' . $projects->parats_project_id . '_' . $goals->id;
-                        $validationRules[$ratingValue] = 'required|in:1,2,3,4,0';
+                        $i = 1;
+                        foreach($user_goals as $goals)
+                        {
+                            $ratingValue = 'rating_' . $projects->parats_project_id . '_' . $goals->id;
+                            $validationRules[$ratingValue] = 'required|in:1,2,3,4,0';
 
-                         // Custom error message with index
-                        $customMessages["$ratingValue.required"] = "All Rating is required for Project #".$projects->project_name. " - Goal #".$i;
-                        $customMessages["$ratingValue.in"] = "Invalid rating selected for Project #".$projects->project_name. " - Goal #".$i;
-                        $i++;
+                            // Custom error message with index
+                            $customMessages["$ratingValue.required"] = "All Rating is required for Project #".$projects->project_name. " - Goal #".$i;
+                            $customMessages["$ratingValue.in"] = "Invalid rating selected for Project #".$projects->project_name. " - Goal #".$i;
+                            $i++;
+                        }
+                    }
+                    $validator = Validator::make($request->all(), $validationRules, $customMessages);
+                    if ($validator->fails()) {
+                        return redirect()->back()->withErrors($validator)->withInput();
                     }
                 }
-                $validator = Validator::make($request->all(), $validationRules, $customMessages);
-                if ($validator->fails()) {
-                    return redirect()->back()->withErrors($validator)->withInput();
-                }
-            }
-            
-            /**
-            * Delete goals rating and key contributions from table.
-            * Here, we will check whether goals rating and key contributions are already inserted if yes delete in case of updation. 
-            */
-
-                $this->deleteExistingUserSelfRatingData($appraisalCycle,$userHeadsId,$appraisal_form_id);
-
-            /**
-            * Code Ends Here
-            */  
-
-            /**
-            * Insert project - goals wise rating 
-            * This block of code insert  the goal and rating of each project
-            */
-               
-            
-                foreach ($user_projects as $projects)
-                {
-                    $taskdetails = 'taskdetails' . $projects->parats_project_id;
-                    DB::table('project_extra')->insert([
-                        'appraisal_cycle' => $appraisalCycle,
-                        'appraisal_form_id' => $appraisal_form_id,
-                        'employee_heads_id' => $userHeadsId,
-                        'parats_project_id' => $projects->parats_project_id,
-                        'task_details' => $request->input($taskdetails)
-                    ]);
                 
-                    
-                    foreach($user_goals as $goals)
-                    {
-                        $goalRatingData = [];
-                        $ratingValue = 'rating_' . $projects->parats_project_id . '_' . $goals->id;
-                        $empremarks = 'remarks_' . $projects->parats_project_id . '_' . $goals->id;
+                /**
+                * Delete goals rating and key contributions from table.
+                * Here, we will check whether goals rating and key contributions are already inserted if yes delete in case of updation. 
+                */
 
-                        $fileInputName = 'evidence_' . $projects->parats_project_id . '_' . $goals->id;
-                        $attachmentPath = null;
-            
-                        if ($request->hasFile($fileInputName)) {
-                            $file = $request->file($fileInputName);
-                            $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                            $cleanFilename = preg_replace('/[^A-Za-z0-9_\-]/', '_', $originalFilename);
-                            $extension = $file->getClientOriginalExtension();
-                            $timestamp = time();
-                            $newFilename = $cleanFilename.$goals->id.$timestamp.'.'.$extension;
-                            $attachmentPath = $file->storeAs('uploads/evidence', $newFilename, 'public');
-                        }else {
-                            $oldAttachment =  $request->input('attachment_' . $projects->parats_project_id . '_' . $goals->id);
-                            if($oldAttachment!='')
-                            {
-                                $attachmentPath = $oldAttachment;
+                    $this->deleteExistingUserSelfRatingData($appraisalCycle,$userHeadsId,$appraisal_form_id);
+
+                /**
+                * Code Ends Here
+                */  
+
+                /**
+                * Insert project - goals wise rating 
+                * This block of code insert  the goal and rating of each project
+                */
+                
+                
+                    foreach ($user_projects as $projects)
+                    {
+                        $taskdetails = 'taskdetails' . $projects->parats_project_id;
+                        DB::table('project_extra')->insert([
+                            'appraisal_cycle' => $appraisalCycle,
+                            'appraisal_form_id' => $appraisal_form_id,
+                            'employee_heads_id' => $userHeadsId,
+                            'parats_project_id' => $projects->parats_project_id,
+                            'task_details' => $request->input($taskdetails)
+                        ]);
+                    
+                        
+                        foreach($user_goals as $goals)
+                        {
+                            $goalRatingData = [];
+                            $ratingValue = 'rating_' . $projects->parats_project_id . '_' . $goals->id;
+                            $empremarks = 'remarks_' . $projects->parats_project_id . '_' . $goals->id;
+
+                            $fileInputName = 'evidence_' . $projects->parats_project_id . '_' . $goals->id;
+                            $attachmentPath = null;
+                
+                            if ($request->hasFile($fileInputName)) {
+                                $file = $request->file($fileInputName);
+                                $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                                $cleanFilename = preg_replace('/[^A-Za-z0-9_\-]/', '_', $originalFilename);
+                                $extension = $file->getClientOriginalExtension();
+                                $timestamp = time();
+                                $newFilename = $cleanFilename.$goals->id.$timestamp.'.'.$extension;
+                                $attachmentPath = $file->storeAs('uploads/evidence', $newFilename, 'public');
+                            }else {
+                                $oldAttachment =  $request->input('attachment_' . $projects->parats_project_id . '_' . $goals->id);
+                                if($oldAttachment!='')
+                                {
+                                    $attachmentPath = $oldAttachment;
+                                }
                             }
+                            
+
+                            $goalRatingData[] = [
+                                'appraisal_cycle' => $appraisalCycle,
+                                'appraisal_form_id'  => $appraisal_form_id,
+                                'employee_heads_id' => $userHeadsId,
+                                'goal_id' => $goals->id,
+                                'parats_project_id' => $projects->parats_project_id,
+                                'rating' => $request->input($ratingValue),
+                                'employee_comment' => $request->input($empremarks),
+                                'attachment' => $attachmentPath
+                            ];
+                            $this->appraisalFormService->insertToGoalRatings($goalRatingData);
                         }
                         
+                    }
 
-                        $goalRatingData[] = [
+                /**
+                * Code Ends Here
+                */
+
+
+                /**
+                * Insert general goals rating 
+                * This block of code insert  the goal and rating without any project
+                */
+                
+                    foreach($user_goals as $goals)
+                    {
+                        $goalRatingDataOnce = [];
+                        $ratingValue = 'general_rating_'  . $goals->id;
+                        $empremarks = 'general_remarks_' . $goals->id;
+                        $goalRatingDataOnce[] = [
                             'appraisal_cycle' => $appraisalCycle,
                             'appraisal_form_id'  => $appraisal_form_id,
                             'employee_heads_id' => $userHeadsId,
                             'goal_id' => $goals->id,
-                            'parats_project_id' => $projects->parats_project_id,
+                            'parats_project_id' => -1,
                             'rating' => $request->input($ratingValue),
-                            'employee_comment' => $request->input($empremarks),
-                            'attachment' => $attachmentPath
+                            'employee_comment' => $request->input($empremarks)
                         ];
-                        $this->appraisalFormService->insertToGoalRatings($goalRatingData);
+                        $this->appraisalFormService->insertToGoalRatings($goalRatingDataOnce);
                     }
-                    
-                }
+                    DB::table('project_extra')->insert([
+                            'appraisal_cycle' => $appraisalCycle,
+                            'appraisal_form_id' => $appraisal_form_id,
+                            'employee_heads_id' => $userHeadsId,
+                            'parats_project_id' => -1,
+                            'task_details' => $request->input('general_taskdetails')
+                    ]);
+                /**
+                * Code Ends Here
+                */
 
-            /**
-            * Code Ends Here
-            */
-
-
-            /**
-            * Insert general goals rating 
-            * This block of code insert  the goal and rating without any project
-            */
-            
-                foreach($user_goals as $goals)
-                {
-                    $goalRatingDataOnce = [];
-                    $ratingValue = 'general_rating_'  . $goals->id;
-                    $empremarks = 'general_remarks_' . $goals->id;
-                    $goalRatingDataOnce[] = [
+                /**
+                * Insert Suggestions and key contributions 
+                * This block of code insert the Suggestions and key contributions for Organization’s Improvement by the appraisee
+                */
+                    DB::table('general_data_by_appraisee')->insert([
                         'appraisal_cycle' => $appraisalCycle,
                         'appraisal_form_id'  => $appraisal_form_id,
                         'employee_heads_id' => $userHeadsId,
-                        'goal_id' => $goals->id,
-                        'parats_project_id' => -1,
-                        'rating' => $request->input($ratingValue),
-                        'employee_comment' => $request->input($empremarks)
-                    ];
-                    $this->appraisalFormService->insertToGoalRatings($goalRatingDataOnce);
+                        'key_contributions' => $request->input('key_contributions'),
+                        'suggestions_for_improvement' => $request->input('suggestions_for_improvement'),
+                        'workshops_attended' => $request->input('employee_workshops'),
+                        'trainings_conducted' => $request->input('employee_training_conducted')
+                    ]);
+                
+                /**
+                * Code Ends Here
+                */
+                if ($request->input('is_finalise') == '1') {
+                    DB::table('appraisal_form')
+                        ->where('employee_heads_id', $userHeadsId)
+                        ->where('id', $appraisal_form_id)
+                        ->where('appraisal_cycle_id', $appraisalCycle)
+                        ->update(['self_finalise' => 1]);
                 }
-                DB::table('project_extra')->insert([
-                        'appraisal_cycle' => $appraisalCycle,
-                        'appraisal_form_id' => $appraisal_form_id,
-                        'employee_heads_id' => $userHeadsId,
-                        'parats_project_id' => -1,
-                        'task_details' => $request->input('general_taskdetails')
-                ]);
-            /**
-            * Code Ends Here
-            */
-
-            /**
-            * Insert Suggestions and key contributions 
-            * This block of code insert the Suggestions and key contributions for Organization’s Improvement by the appraisee
-            */
-                DB::table('general_data_by_appraisee')->insert([
-                    'appraisal_cycle' => $appraisalCycle,
-                    'appraisal_form_id'  => $appraisal_form_id,
-                    'employee_heads_id' => $userHeadsId,
-                    'key_contributions' => $request->input('key_contributions'),
-                    'suggestions_for_improvement' => $request->input('suggestions_for_improvement'),
-                    'workshops_attended' => $request->input('employee_workshops'),
-                    'trainings_conducted' => $request->input('employee_training_conducted')
-                ]);
-             
-            /**
-            * Code Ends Here
-            */
-            if ($request->input('is_finalise') == '1') {
-                DB::table('appraisal_form')
-                    ->where('employee_heads_id', $userHeadsId)
-                    ->where('id', $appraisal_form_id)
-                    ->where('appraisal_cycle_id', $appraisalCycle)
-                    ->update(['self_finalise' => 1]);
             }
-
         }
         else if($appraisal_category == 2) /////////////////////////   Code by Sooraj /////////////////////////////////////
         {
@@ -716,7 +720,8 @@ class AppraisalFormController extends Controller
         $response = Http::withHeaders($headers)->post($url, $body);
         
         if ($response->failed()) {
-            dd("API Request Failed", $response->status(), $response->body());
+            //dd("API Request Failed", $response->status(), $response->body());
+            return '';
         }
         if ($response->successful()) {
             $data = $response->json();

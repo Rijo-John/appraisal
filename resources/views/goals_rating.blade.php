@@ -13,7 +13,7 @@
    
     @if (!empty($user_projects) && count($user_projects) > 0)
     @foreach($user_projects as $projectIndex => $project)
-   
+    @php $projectId = $project->parats_project_id ?? 0; @endphp
       <!------ project div starts here   ----------->
       <input type="hidden" id="project_name_{{ $project->parats_project_id }}" value="<?=$project->project_name?>" />
       <input type="hidden" name="self_finalise" id="self_finalise" value="<?=$selfFinalise?>" />
@@ -43,7 +43,6 @@
                 <tbody>
                   @foreach($user_goals as $index => $goal)   
                   @php
-                      $projectId = $project->parats_project_id ?? 0;
                       $goalKey = $goal->id ?? 0;
                       $ratingExists = isset($projectWiseData[$projectId][$goalKey][0]->rating) && ($projectWiseData[$projectId][$goalKey][0]->rating!='');
                       $existingRating = $ratingExists ? $projectWiseData[$projectId][$goalKey][0]->rating : '';

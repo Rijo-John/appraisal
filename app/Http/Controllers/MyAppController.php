@@ -170,6 +170,7 @@ class MyAppController extends Controller
             }
             else
             {
+                $certificationsfromHeads = new \stdClass();
                 $certificationsfromHeads->AppraisalCertListDataResponse = [];
             }
             
@@ -508,7 +509,8 @@ class MyAppController extends Controller
         $response = Http::withHeaders($headers)->post($url, $body);
         
         if ($response->failed()) {
-            dd("API Request Failed", $response->status(), $response->body());
+           // dd("API Request Failed", $response->status(), $response->body());
+           return '';
         }
         if ($response->successful()) {
             $data = $response->json();
