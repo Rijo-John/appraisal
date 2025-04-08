@@ -295,7 +295,7 @@ class AppraisalFormController extends Controller
             * Code Ends Here
             */
             //echo '<pre>'; print_r($projectWiseData); die();
-        
+            //echo '<pre>'; print_r($submitted_general_data); die();
             return view('my_appraisal', [
                 'employeeData' => $employeeData,
                 'user_goals' => $user_goals,

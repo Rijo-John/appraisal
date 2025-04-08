@@ -173,8 +173,8 @@
       <div class="col">
         <p class="">Key Contributions</p>
           @php
-            $keyContributions = isset($general_data[0]) ? ($general_data[0]->key_contributions ?? '') : '';
-            $suggestionsimprovemnts = isset($general_data[0]) ? ($general_data[0]->suggestions_for_improvement ?? '') : '';
+            $keyContributions = isset($general_data) ? ($general_data->key_contributions ?? '') : '';
+            $suggestionsimprovemnts = isset($general_data) ? ($general_data->suggestions_for_improvement ?? '') : '';
           @endphp
         <textarea name="key_contributions"  style="height: 83px;" class="form-control"><?=$keyContributions?></textarea>
       </div>

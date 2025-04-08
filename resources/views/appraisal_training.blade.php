@@ -131,8 +131,8 @@
                             <td>Workshops / Seminars attended</td>
                             <td>
                             @php
-                                $workshops_attended = isset($general_data[0]) ? ($general_data[0]->workshops_attended ?? '') : '';
-                                $trainings_conducted = isset($general_data[0]) ? ($general_data[0]->trainings_conducted ?? '') : '';
+                                $workshops_attended = isset($general_data) ? ($general_data->workshops_attended ?? '') : '';
+                                $trainings_conducted = isset($general_data) ? ($general_data->trainings_conducted ?? '') : '';
                             @endphp
                                 <textarea name="employee_workshops"  class="form-control" placeholder="Enter your Workshops / Seminars attended"><?=$workshops_attended?></textarea>
                             </td>
