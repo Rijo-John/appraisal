@@ -161,7 +161,7 @@ class MyAppController extends Controller
             $params = [
                 'url' => env('HEADS_CERTIFICATION_URL'),
                 'appraisalMonthType' => (int) $appraisalMonth,
-                'employeeId' => 11, // (int) $user->heads_id,
+                'employeeId' =>  (int) $user->heads_id,
                 'appraisalMonth' => $formattedAppraisalEndDate //"2025-04",
             ];
             $certificationsfromHeads = $this->apiCallToGetCertificationDetailsHeads($params);

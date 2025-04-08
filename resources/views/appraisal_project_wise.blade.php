@@ -177,6 +177,62 @@
               $(this).removeClass("is-invalid");
               $(this).next(".rating-error").remove();
           });
+
+
+          // AJAX call to refresh certification details
+        $('#refresh_certification').on('click', function() {
+          var clicks = parseInt($('#number_of_clicks').val()) || 0; 
+          if(clicks == 0)
+          {
+              clicks += 1; // Increment
+              $('#number_of_clicks').val(clicks);
+              $('#refresh_certification i').removeClass('bi-arrow-repeat');
+              $.ajax({
+                url: '/refresh-certification', 
+                type: 'GET', 
+                dataType: 'json',
+                beforeSend: function() {
+                  $('#refresh_certification i').addClass('spinner-border spinner-border-sm'); 
+                },
+                success: function(response) {
+                  
+                  $('#number_of_clicks').val(0);
+                  $('#refresh_certification i').addClass('bi-arrow-repeat');
+                  if (response.status === 'success') {
+                    const list = $('#certification-list');
+                    list.empty(); // Clear existing list
+                    const certs = response.message.AppraisalCertListDataResponse;
+                    if (certs.length === 0) {
+                        list.append('<li>-</li>');
+                    } else {
+                        certs.forEach(cert => {
+                            list.append(`
+                                <li>
+                                    <span class="heading-color">${cert.Certification}</span>
+                                    <small class="text-body-secondary ms-2">Issued on ${cert.IssuedDate}</small>
+                                    <p class="font-small">${cert.Description}</p>
+                                </li>
+                            `);
+                        });
+                    }
+                  } 
+                  
+                },
+                error: function(xhr, status, error) {
+                  console.error('Error:', error);
+                  alert('Failed to refresh. Please try again.');
+                },
+                complete: function() {
+                  $('#refresh_certification i').removeClass('spinner-border spinner-border-sm'); // remove spinner
+                }
+              });
+          }
+          
+        });
+
+
+
+        
       });
     </script>
 
