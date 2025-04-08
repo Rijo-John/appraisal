@@ -89,6 +89,7 @@ class AppraisalFormController extends Controller
                         'Content-Type' => 'application/json'
                     ])->get($baseUrl, $params);
                     $vigyanData = $response->json(); 
+                    //echo '<pre>'; print_r($vigyanData); die();
                     $total_dedication = 0;
                     $totalVigyanTimeSpentSec = 0;
                     $targeted_hours_sec = 0;
@@ -101,8 +102,8 @@ class AppraisalFormController extends Controller
                     $totaltrainingDuration = 0; 
                     $vigyanTime = 0;
                     $trainingTime = 0;
-//echo '<pre>'; print_r($vigyanData); die();
-                    if(count($vigyanData['vigyan_training_details']) > 0 || count($vigyanData['internal_hours']) > 0 )
+                    //echo '<pre>'; print_r($vigyanData); die();
+                    if(isset($vigyanData['vigyan_training_details']) && count($vigyanData['vigyan_training_details']) > 0 )
                     {
                         
                         $vigyanCourseDetails['courses'] = [];
@@ -128,7 +129,7 @@ class AppraisalFormController extends Controller
                         } 
                         
                     }
-                    if(count($vigyanData['internal_hours']) > 0) {
+                    if(isset($vigyanData['internal_hours']) && count($vigyanData['internal_hours']) > 0) {
                         
                         foreach($vigyanData['internal_hours'] as $index => $training)
                         {
@@ -711,7 +712,7 @@ class AppraisalFormController extends Controller
         $body = [
             'appraisalMonth' => $appraisalMonth,
             'employeeId' =>  $employeeId,
-            'appraisalMonthType' => $appraisalMonthType,
+            'appraisalMonthType' => $appraisalMonthType
         ];
         $headers = [
             'X-Api-Key' => env('HEADS_X_API_KEY'),
@@ -903,6 +904,48 @@ class AppraisalFormController extends Controller
         return response()->json(['success' => true]);
     }
 
+
+    public function refreshCertification(Request $request)
+    {
+        $sessionData = session()->all();
+        $user = Auth::user();
+        $appraisalEndDateYMD = '';
+        $appraisalCycle = $sessionData['current_appraisal_cycle'];
+        $appraisalCycleData =  DB::table('appraisal_cycle')
+        ->select('appraisal_cycle','appraisal_period_start','appraisal_period_end')
+        ->where('id', $appraisalCycle)
+        ->where('status', 1)
+        ->get();
+        if($appraisalCycleData) {
+            if (!empty($appraisalCycleData) && !empty($appraisalCycleData[0]->appraisal_period_start) &&  !empty($appraisalCycleData[0]->appraisal_period_end)) {
+                $appraisalEndDateYMD = $appraisalCycleData[0]->appraisal_period_end;
+            }
+        }
+        $currentMonth = Carbon::now()->month;
+        $appraisalMonth = ($currentMonth < 7) ? 1 : 2;
+        $formattedAppraisalEndDate = Carbon::parse($appraisalEndDateYMD)->format('Y-m');
+
+        $params = [
+            'url' => env('HEADS_CERTIFICATION_URL'),
+            'appraisalMonthType' => (int) $appraisalMonth,
+            'employeeId' =>  (int) $user->heads_id, // 11
+            'appraisalMonth' => $formattedAppraisalEndDate //"2025-04",
+        ];
+        $certificationsfromHeads = $this->apiCallToGetCertificationDetailsHeads($params);
+        if (isset($certificationsfromHeads->AppraisalCertListDataResponse) && count($certificationsfromHeads->AppraisalCertListDataResponse) > 0) {
+            return response()->json([
+                'status' => 'success',
+                'message' => $certificationsfromHeads
+            ], 200); 
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No certifications found from head'
+            ], 200); 
+        }
+        
+        
+    }
 
 
 }

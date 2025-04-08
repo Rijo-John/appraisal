@@ -124,6 +124,8 @@ Route::middleware(['auth:web'])->group(function () {
         return Storage::download($filePath);
     })->name('download.file');
 
+    Route::get('/refresh-certification', [AppraisalFormController::class, 'refreshCertification'])->name('refresh.certification');
+
     
 });
 

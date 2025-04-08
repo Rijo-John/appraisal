@@ -271,7 +271,8 @@ class MyAppController extends Controller
                 'selfFinalise' => $selfFinalise,
             ]);
         } else {
-            return redirect()->route('nopermission');
+            //return redirect()->route('nopermission');
+            return view('user_not_in_appraisal');
         }
     }
     
@@ -329,10 +330,11 @@ class MyAppController extends Controller
                     }
                 }
                 $validator = Validator::make($request->all(), $validationRules, $customMessages);
+                if ($validator->fails()) {
+                    return redirect()->back()->withErrors($validator)->withInput();
+                }
             }
-            if ($validator->fails()) {
-                return redirect()->back()->withErrors($validator)->withInput();
-            }
+           
             /**
             * Delete goals rating and key contributions from table.
             * Here, we will check whether goals rating and key contributions are already inserted if yes delete in case of updation. 

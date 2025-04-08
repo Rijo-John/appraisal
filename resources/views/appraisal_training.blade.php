@@ -89,13 +89,20 @@
                         </tr>
                     </tbody>
                 </table>
-
+                <input type="hidden" id="number_of_clicks" value="0" >
                 <h6 class="mt-5 mb-3"></h6>
                 <table class="table table-bordered">
                     <thead>
                         <tr class="align-top">
                             <th>Category</th>
-                            <th>Details</th>
+                            <th>
+                                <div class="row g-0">
+                                    <div class="col">
+                                    Details
+                                    </div>
+                                    <div class="col-auto "><span class="text-right heading-color pointer" style="font-weight: normal;" id="refresh_certification"><i class="bi bi-arrow-repeat"></i> Refresh</span>
+                                </div></div>
+                            </th>
                             
                         </tr>
                     </thead>
@@ -103,7 +110,7 @@
                         <tr>
                             <td width="40%">Relevant education qualification / certifications Achieved during the appraisal period</td>
                             <td>
-                                <ul>
+                                <ul id="certification-list">
                                     @if(count($certificationsfromHeads->AppraisalCertListDataResponse) > 0)
                                     @foreach($certificationsfromHeads->AppraisalCertListDataResponse  as $certificate) 
                                             <li> 
