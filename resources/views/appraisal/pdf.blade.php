@@ -17,45 +17,18 @@
 
     <h2>My Goals</h2>
 
-    @foreach($user_goals as $index => $goal)
-        <div class="section goal">
-            <div class="goal-number">Goal {{ $index + 1 }}</div>
-            <div><strong>Description:</strong> {{ $goal->goal }}</div>
-            <div><strong>Weightage:</strong> {{ $goal->weightage }}</div>
+    @foreach ($user_goals as $index => $goal)
+        <div class="section">
+            <strong>Goal {{ $index + 1 }}</strong><br>
+            <div><span class="label">Description:</span> {{ $goal->goal ?? '-' }}</div>
+            <div><span class="label">Weightage:</span> {{ $goal->weightage ?? '-' }}</div>
+            <div><span class="label">Rating:</span> {{ $ratingLabels[(int)$goal->rating] ?? 'Not Provided' }}</div>
 
-            @if(!empty($goalWiseData[$goal->id]))
-                @foreach($goalWiseData[$goal->id] as $dataIndex => $data)
-                    <div class="goal-rating">
-                        <div><span class="label">Rating:</span>
-                            @switch($data->rating)
-                                @case(10) Achieved @break
-                                @case(5) Partially Achieved @break
-                                @case(1) Not Achieved @break
-                                @case(0) Not Applicable @break
-                                @default N/A
-                            @endswitch
-                        </div>
-
-                        <div><span class="label">Task Details:</span> {{ $data->employee_comment }}</div>
-
-                        @if(!empty($data->attachment))
-                            <div><span class="label">Evidence:</span> 
-                                <span class="evidence-link">
-                                    {{ basename($data->attachment) }}
-                                </span>
-                            </div>
-                        @endif
-                    </div>
-                @endforeach
-            @else
-                <div class="goal-rating">
-                    <div><span class="label">Rating:</span> Not Provided</div>
-                    <div><span class="label">Task Details:</span> -</div>
-                    <div><span class="label">Evidence:</span> -</div>
-                </div>
-            @endif
+            <div><span class="label">Employee Comment:</span> {{ $goal->employee_comment ?? '-' }}</div>
+            <div><span class="label">Attachment:</span> {{ $goal->attachment ?? '-' }}</div>
         </div>
     @endforeach
+
 
     <h3>General Comments</h3>
     <div class="section">
