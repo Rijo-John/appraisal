@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AppraisalFinalizedNotification;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 
 class AppraisalFormController extends Controller
@@ -551,12 +552,29 @@ class AppraisalFormController extends Controller
                     ->delete();
             }
     
-            $user_goals = DB::table('goals')
+            /*$user_goals = DB::table('goals')
                 ->select('id', 'goal', 'employee_heads_id', 'appraisal_cycle', 'weightage')
                 ->where('appraisal_cycle', $appraisalCycle)
                 ->where('employee_heads_id', $userHeadsId)
+                ->get();*/
+            $user_goals = DB::table('goals')
+                ->leftJoin('employee_goal_ratings', 'goals.id', '=', 'employee_goal_ratings.goal_id')
+                ->select(
+                    'goals.id',
+                    'goals.goal',
+                    'goals.employee_heads_id',
+                    'goals.appraisal_cycle',
+                    'goals.weightage',
+                    'employee_goal_ratings.rating',
+                    'employee_goal_ratings.employee_comment',
+                    'employee_goal_ratings.attachment'
+                )
+                ->where('goals.appraisal_cycle', $appraisalCycle)
+                ->where('goals.employee_heads_id', $userHeadsId)
                 ->get();
-    
+                
+            //dd($user_goals);
+
             
             $validationRules = [];
             $customMessages = [];
@@ -666,6 +684,15 @@ class AppraisalFormController extends Controller
             ]);
     
             if ($request->input('is_finalise') === '1') {
+                $ratingLabels = [
+                    10 => 'Achieved',
+                    5  => 'Partially Achieved',
+                    1  => 'Not Achieved',
+                    0  => 'Not Applicable'
+                ];
+                //dd($user_goals);
+                $submitted_general_data =  $this->getEmployeeGeneralData($appraisalCycle,$userHeadsId,$appraisalFormId);
+                //dd($submitted_general_data);
                 DB::table('appraisal_form')
                     ->where('employee_heads_id', $userHeadsId)
                     ->where('id', $appraisalFormId)
@@ -686,13 +713,28 @@ class AppraisalFormController extends Controller
                 if ($employeeDetails && $employeeDetails->employeeEmail) {
                     $ccEmails = explode(',', env('APPRAISAL_START_MAIL_CC_ADDRESSES'));
 
+                    // Prepare data to send to PDF view
+                    $pdfData = [
+                        'employeeDetails' => $employeeDetails,
+                        'appraiserOfficerName' => $appraiserOfficerName,
+                        'appraisalCycle' => $appraisalCycle,
+                        'user_goals' => $user_goals,
+                        'submittedGeneralData' => $submitted_general_data,
+                        'ratingLabels' => $ratingLabels
+                        // Add other data as needed
+                    ];
+
+                    $pdf = Pdf::loadView('appraisal.pdf', $pdfData);
+                    $pdfContent = $pdf->output();
+
                     Mail::to($employeeDetails->employeeEmail)
                         ->cc($ccEmails)
                         ->send(new AppraisalFinalizedNotification(
                             $employeeDetails->employeeEmail, 
                             $employeeDetails->employeeName, 
                             $appraiserOfficerName, 
-                            $appraisalCycle
+                            $appraisalCycle,
+                            $pdfContent
                         ));
                 }
             }
@@ -798,7 +840,7 @@ class AppraisalFormController extends Controller
                         ->where('appraisal_cycle', $appraisalCycle)
                         ->where('employee_heads_id', $userHeadsId)
                         ->where('appraisal_form_id', $appraisal_form_id)
-                        ->get();
+                        ->first();
         return $general_data;
     }
     public function deleteExistingUserSelfRatingData($appraisalCycle,$userHeadsId,$appraisal_form_id)
