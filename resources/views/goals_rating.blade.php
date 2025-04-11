@@ -45,7 +45,7 @@
                   @php
                       $goalKey = $goal->id ?? 0;
                       $ratingExists = isset($projectWiseData[$projectId][$goalKey][0]->rating) && ($projectWiseData[$projectId][$goalKey][0]->rating!='');
-                      $existingRating = $ratingExists ? $projectWiseData[$projectId][$goalKey][0]->rating : '';
+                      $existingRating = $ratingExists ? $projectWiseData[$projectId][$goalKey][0]->rating : 1;
                       $existingComment = $projectWiseData[$projectId][$goalKey][0]->employee_comment ?? '';
                   @endphp
                     <tr>
@@ -54,12 +54,12 @@
                         <td width="150">
                           
                             <select name="rating_{{ $project->parats_project_id }}_{{ $goal->id }}" class="form-select project_goal_rating" data-projectId="{{ $project->parats_project_id }}">
-                                <option value="" {{ !$ratingExists ? 'selected' : '' }}>Select rating</option>
-                                <option value="1" {{ $existingRating == 1 ? 'selected' : '' }}>1</option>
-                                <option value="2" {{ $existingRating == 2 ? 'selected' : '' }}>2</option>
+                                <!-- <option value="" {{ !$ratingExists ? 'selected' : '' }}>Select rating</option> -->
+                                 <option value="4" {{ $existingRating == 4 ? 'selected' : '' }}>4</option>
                                 <option value="3" {{ $existingRating == 3 ? 'selected' : '' }}>3</option>
-                                <option value="4" {{ $existingRating == 4 ? 'selected' : '' }}>4</option>
-                                <option value="0" {{ $existingRating == 0 ? 'selected' : '' }}>Not Applicable</option>
+                                <option value="2" {{ $existingRating == 2 ? 'selected' : '' }}>2</option>
+                                <option value="1" {{ $existingRating == 1 ? 'selected' : '' }}>1</option>
+                                <!-- <option value="0" {{ $existingRating == 0 ? 'selected' : '' }}>Not Applicable</option> -->
                             </select>
                         </td>
                         <td width="350">
@@ -152,20 +152,21 @@
               @php
                   $goaalId = $goal->id ?? 0;
                   $ratingExists = isset($projectWiseData[-1][$goaalId][0]->rating) && !empty($projectWiseData[-1][$goaalId][0]->rating);
-                  $existingRating = $ratingExists ? $projectWiseData[-1][$goaalId][0]->rating : '';
+                  $existingRating = $ratingExists ? $projectWiseData[-1][$goaalId][0]->rating : 1;
                   $existingComment = $projectWiseData[-1][$goaalId][0]->employee_comment ?? '';
+                  
               @endphp 
               <tr>
                   <td width="50" class="text-center">{{ $index+1 }}</td>
                   <td>{{ $goal->goal }}</td>
                   <td width="150">
                       <select name="general_rating_{{ $goal->id }}" class="form-select project_goal_rating" data-projectId="general">
-                          <option value="" {{ !$ratingExists ? 'selected' : '' }}>Select rating</option>
-                          <option value="1" {{ $existingRating == 1 ? 'selected' : '' }}>1</option>
-                          <option value="2" {{ $existingRating == 2 ? 'selected' : '' }}>2</option>
-                          <option value="3" {{ $existingRating == 3 ? 'selected' : '' }}>3</option>
+                          <!-- <option value="" {{ !$ratingExists ? 'selected' : '' }}>Select rating</option> -->
                           <option value="4" {{ $existingRating == 4 ? 'selected' : '' }}>4</option>
-                          <option value="0" {{ $existingRating == 0 ? 'selected' : '' }}>Not Applicable</option>
+                          <option value="3" {{ $existingRating == 3 ? 'selected' : '' }}>3</option>
+                          <option value="2" {{ $existingRating == 2 ? 'selected' : '' }}>2</option>
+                          <option value="1" {{ $existingRating == 1 ? 'selected' : '' }}>1</option>
+                          <!-- <option value="0" {{ $existingRating == 0 ? 'selected' : '' }}>Not Applicable</option> -->
                       </select>
                   </td>
                   <td width="350">

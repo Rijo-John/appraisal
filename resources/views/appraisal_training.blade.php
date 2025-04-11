@@ -8,12 +8,12 @@
             <div class="col mt-4">
                 <h5 class="mb-2">Training & certifications</h5> 
                 <hr>
-                <table class="table table-bordered">
+                <!-- <table class="table table-bordered">
                     <thead>
                     <tr>
                         <th class="text-center">#</th>
                         <th>Learning Goals</th>
-                        <!-- <th>Overall Weightage</th> -->
+                        
                         <th class="text-center">Goal Status</th> 
                     </tr>
                 </thead>
@@ -24,17 +24,17 @@
                     <h6>Learning & Development</h6>
                     <p>Completing a mandatory 50 hours learning annually with at least 25% of training through Vigyan</p>
                     </td>
-                    <!-- <td class="text-center">50</td> -->
+                    
                     <td class="text-center">{{ $vigyanCourseDetails['calculatePercentage']}}%</td>
                 </tr>
                 </tbody>
-                </table>
+                </table> -->
             </div>
         </div> 
         <div class="row align-items-center">
             <div class="col">
                 <h5></h5>
-                <h6 class="mt-5 mb-3">Training</h6>
+                <h6 class="mt-5 mb-3">Vigyan Trainings and Other Trainings</h6>
                 <table class="table table-bordered">
                     <thead>
                         <tr class="align-top">
@@ -128,7 +128,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td>Workshops / Seminars attended</td>
+                            <td>Enter the workshops/seminars attended</td>
                             <td>
                             @php
                                 $workshops_attended = isset($general_data) ? ($general_data->workshops_attended ?? '') : '';
