@@ -15,6 +15,8 @@ use App\Http\Controllers\GoalController;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\MyAppController;
+use App\Http\Controllers\ListController;
+use App\Http\Controllers\AppraiserEvaluationNonTechnicalController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -50,8 +52,9 @@ Route::get('/nopermission', function () {
     return view('no_permission'); 
 })->name('nopermission');
 Route::middleware(['auth:web'])->group(function () {
-
-    
+    Route::post('/appraiser-goal-submit', [AppraiserEvaluationNonTechnicalController::class, 'submitAppraiserGoals'])->name('appraiserGoalSubmit');
+    Route::get('/appraiserindex/{id}', [AppraiserEvaluationNonTechnicalController::class, 'index'])->name('appraiserevaluateindex');
+    Route::get('/list', [ListController::class, 'list'])->name('list');
     Route::get('/cfGhjYer/{filename}', [AppraisalFormController::class, 'download'])->name('file.download');
     Route::post('/file/delete', [AppraisalFormController::class, 'delete'])->name('file.delete');
     Route::post('/delete_attachment', [AppraisalFormController::class, 'deleteAttachment'])->name('deleteAttachment');

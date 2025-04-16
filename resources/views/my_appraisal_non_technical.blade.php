@@ -51,11 +51,11 @@
                                             <label  class="col-md-2 col-form-label">Rating <span class="text-danger">*</span></label>
                                             <div class="col-md-3">
                                                 <select name="rating_{{ $goal->id }}" class="form-select">
-                                                    <option value="">Select rating</option>                                                   
-                                                    <option value="10" <?= ($data->rating == 10) ? 'selected' : '' ?>>Achieved</option>
-                                                    <option value="5" <?= ($data->rating == 5) ? 'selected' : '' ?>>Partially Achieved</option>
-                                                    <option value="1" <?= ($data->rating == 1) ? 'selected' : '' ?>>Not Achieved</option>
-                                                    <option value="0" <?= ($data->rating == 0) ? 'selected' : '' ?>>Not Applicable</option>
+                                                    <!-- <option value="">Select rating</option>    -->                                                
+                                                    <option value="4" <?= ($data->rating == 4) ? 'selected' : '' ?>>4</option>
+                                                    <option value="3" <?= ($data->rating == 3) ? 'selected' : '' ?>>3</option>
+                                                    <option value="2" <?= ($data->rating == 2) ? 'selected' : '' ?>>2</option>
+                                                    <option value="1" <?= ($data->rating == 1) ? 'selected' : '' ?>>1</option>
                                                 </select>
                                             </div>
                                             <!-- <label  class="col-md-2 col-form-label col-auto-xxl">Project Name</label>
@@ -144,12 +144,12 @@
                                             <label  class="col-md-2 col-form-label">Rating <span class="text-danger">*</span></label>
                                             <div class="col-md-3">
                                                 <select name="rating_{{ $goal->id }}" class="form-select">
-                                                    <option value="" selected>Select rating</option>
+                                                    <!-- <option value="" selected>Select rating</option> -->
                                                     
-                                                    <option value="10" >Achieved</option>
-                                                    <option value="5" >Partially Achieved</option>
-                                                    <option value="1" >Not Achieved</option>
-                                                    <option value="0" >Not Applicable</option>
+                                                    <option value="4" >4</option>
+                                                    <option value="3" >3</option>
+                                                    <option value="2" >2</option>
+                                                    <option value="1" selected>1</option>
                                                 </select>
                                             </div>
                                             <!-- <label  class="col-md-2 col-form-label col-auto-xxl">Project Name</label>
@@ -220,11 +220,11 @@
         <div style="padding-left:45px">
           <div class="row mt-3 mb-2">
             <div class="col-md-6">
-              <p class="">Key Contributions</p>
+              <p class="">Key contributions/achievements</p>
               <textarea style="height:100px;" name="key_contribution" id="key_contribution" class="form-control"><?= $submittedGeneralData?->key_contributions ?? ''; ?></textarea>
             </div>
             <div class="col-md-6">
-              <p class="">Appraiser Comments</p>              
+              <p class="">Suggestions for improvement for the organization</p>              
               <textarea style="height:100px;" name="appraiser_comment" id="appraiser_comment" class="form-control"><?= $submittedGeneralData?->suggestions_for_improvement ?? ''; ?></textarea>
             </div>
           </div>

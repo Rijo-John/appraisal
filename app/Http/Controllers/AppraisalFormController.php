@@ -203,7 +203,7 @@ class AppraisalFormController extends Controller
                 'emp_code' => $user->emp_code,
                 'designation_name' => $user->designation_name,
                 'date_of_join' => $user->date_of_join,
-                'appraisal_period' => $appraisalData->profile_pic,
+                'appraisal_period' => $appraisalData->appraisal_period,
                 'appraiserOfficerName' => $appraiserOfficerName,
             ];
         /**
