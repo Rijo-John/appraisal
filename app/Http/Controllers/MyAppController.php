@@ -232,7 +232,7 @@ class MyAppController extends Controller
                                             ->where('appraisal_cycle', $appraisalCycle)
                                             ->where('employee_heads_id', $userHeadsId)
                                             ->where('appraisal_form_id', $appraisal_form_id)
-                                            ->get();
+                                            ->first();
                 
                               
                 $projectWiseData = [];
@@ -257,7 +257,7 @@ class MyAppController extends Controller
             /**
             * Code Ends Here
             */
-            //echo '<pre>'; print_r($vigyanCourseDetails); die();
+            //echo '<pre>'; print_r($submitted_general_data); die();
         
             return view('appraisal_project_wise', [
                 'employeeData' => $employeeData,

@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\MyAppController;
 use App\Http\Controllers\ListController;
 use App\Http\Controllers\AppraiserEvaluationNonTechnicalController;
+use App\Http\Controllers\AppraiserEvaluationController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -128,7 +129,7 @@ Route::middleware(['auth:web'])->group(function () {
     })->name('download.file');
 
     Route::get('/refresh-certification', [AppraisalFormController::class, 'refreshCertification'])->name('refresh.certification');
-
-    
+    Route::get('/appraiser-evaluation', [AppraiserEvaluationController::class, 'index'])->name('appraiserevaluation');
+    Route::post('/appraiser-submit-rating', [AppraiserEvaluationController::class, 'appraiserSubmitEmpRating'])->name('appraiserSubmitEmpRating');
 });
 
